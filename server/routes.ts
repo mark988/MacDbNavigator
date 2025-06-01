@@ -170,6 +170,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get tables for a specific database
+  app.get('/api/connections/:id/databases/:dbName/tables', async (req, res) => {
+    try {
+      const connectionId = parseInt(req.params.id);
+      const dbName = req.params.dbName;
+      const connection = await storage.getConnection(connectionId);
+      
+      if (!connection) {
+        return res.status(404).json({ error: 'Connection not found' });
+      }
+
+      let tables: any[] = [];
+
+      try {
+        if (connection.type === 'mysql') {
+          const mysqlConnection = mysql.createConnection({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: dbName,
+          });
+
+          const [tablesResult] = await mysqlConnection.execute('SHOW TABLES');
+          tables = (tablesResult as any[]).map(row => ({
+            name: row[`Tables_in_${dbName}`],
+            type: 'table' as const
+          }));
+
+          await mysqlConnection.end();
+        } else if (connection.type === 'postgresql') {
+          const client = new Client({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: dbName,
+            ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
+          });
+          await client.connect();
+
+          const tableResult = await client.query(`
+            SELECT table_name, table_type 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+          `);
+          tables = tableResult.rows.map(row => ({
+            name: row.table_name,
+            type: row.table_type === 'VIEW' ? 'view' : 'table'
+          }));
+
+          await client.end();
+        }
+      } catch (err: any) {
+        return res.status(500).json({ error: `Failed to get tables: ${err.message}` });
+      }
+
+      res.json({ tables });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to fetch tables" });
+    }
+  });
+
   // Get table structure/columns
   app.get("/api/connections/:id/tables/:tableName/columns", async (req, res) => {
     try {

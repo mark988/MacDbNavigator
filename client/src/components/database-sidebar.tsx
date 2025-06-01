@@ -479,15 +479,12 @@ function OtherDatabaseItem({
   onTableClick,
   onTableDoubleClick
 }: OtherDatabaseItemProps) {
-  const { data: databaseInfo, isLoading } = useQuery({
-    queryKey: ['/api/connections', connectionId, 'databases', dbName],
+  const { data: tablesData, isLoading } = useQuery({
+    queryKey: ['/api/connections', connectionId, 'databases', dbName, 'tables'],
     queryFn: async () => {
-      const res = await fetch(`/api/connections/${connectionId}/databases`);
-      if (!res.ok) throw new Error('Failed to fetch database info');
-      const data = await res.json() as DatabaseInfo;
-      // For other databases, we need to get their tables separately
-      // This is a simplified approach - in a real app you'd have a separate endpoint
-      return { databases: [], tables: [] };
+      const res = await fetch(`/api/connections/${connectionId}/databases/${dbName}/tables`);
+      if (!res.ok) throw new Error('Failed to fetch tables');
+      return res.json() as Promise<{ tables: any[] }>;
     },
     enabled: isExpanded,
   });
