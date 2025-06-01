@@ -1003,8 +1003,40 @@
       "executionTime": 1961,
       "rowCount": 51,
       "createdAt": "2025-06-01T15:12:40.122Z"
+    },
+    {
+      "id": 123,
+      "connectionId": 1,
+      "query": "select * from t_order",
+      "executionTime": 911,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T15:15:10.391Z"
+    },
+    {
+      "id": 124,
+      "connectionId": 1,
+      "query": "select * from t_order",
+      "executionTime": 872,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T15:15:55.344Z"
+    },
+    {
+      "id": 125,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n\n\n\n\n\n\n\n\n\n",
+      "executionTime": 2310,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T15:18:22.488Z"
+    },
+    {
+      "id": 126,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n",
+      "executionTime": 2238,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T15:18:55.954Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 123
+  "nextHistoryId": 127
 }
