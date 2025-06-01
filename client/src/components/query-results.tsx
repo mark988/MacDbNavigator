@@ -381,6 +381,10 @@ export function QueryResults() {
     .filter(h => h.connectionId === activeConnectionId)
     .sort((a, b) => b.id - a.id)[0];
   
+  console.log('Query history:', queryHistory);
+  console.log('Active connection:', activeConnectionId);
+  console.log('Last query found:', lastQuery);
+  
   return <SingleQueryResult queryResult={queryResults} statement={lastQuery?.query || ""} />;
 }
 
