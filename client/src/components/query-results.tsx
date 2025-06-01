@@ -33,9 +33,6 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   // Check if this is a table query (simple SELECT from a single table)
   const isTableQuery = statement.trim().toLowerCase().match(/^select\s+.+\s+from\s+(\w+)(\s|$|;)/);
   const tableName = isTableQuery ? isTableQuery[1] : null;
-  
-  console.log('Statement:', statement);
-  console.log('Table name detected:', tableName);
 
   const startEditing = (rowIndex: number, column: string, currentValue: any) => {
     setEditingCell({ rowIndex, column });
@@ -76,7 +73,10 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       const response = await fetch(`/api/connections/${activeConnectionId}/table/${tableName}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ changes })
+        body: JSON.stringify({ 
+          changes,
+          originalData: currentRows 
+        })
       });
 
       if (!response.ok) {
@@ -376,14 +376,12 @@ export function QueryResults() {
     );
   }
 
-  // Handle single statement result - get the last executed query from history
+  // Handle single statement result - get the most recent query regardless of connection ID
+  // since the user just executed it on the current connection
   const lastQuery = queryHistory
-    .filter(h => h.connectionId === activeConnectionId)
-    .sort((a, b) => b.id - a.id)[0];
+    .sort((a, b) => b.id - a.id)[0]; // Get the most recent query
   
-  console.log('Query history:', queryHistory);
-  console.log('Active connection:', activeConnectionId);
-  console.log('Last query found:', lastQuery);
+
   
   return <SingleQueryResult queryResult={queryResults} statement={lastQuery?.query || ""} />;
 }

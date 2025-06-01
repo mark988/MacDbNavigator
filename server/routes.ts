@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const connectionId = parseInt(req.params.id);
       const { tableName } = req.params;
-      const { changes } = req.body;
+      const { changes, originalData } = req.body;
 
       const connection = await storage.getConnection(connectionId);
       if (!connection) {
@@ -359,11 +359,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         for (const change of changes) {
-          const { rowIndex, column, newValue } = change;
+          const { rowIndex, column, newValue, oldValue } = change;
           
-          // Build UPDATE query - assuming we have an id column for identifying rows
-          const updateQuery = `UPDATE \`${tableName}\` SET \`${column}\` = ? WHERE id = ?`;
-          await mysqlConnection.execute(updateQuery, [newValue, rowIndex + 1]); // Assuming id starts from 1
+          // Try to find a unique identifier for the row
+          // First check if there's an 'id' column
+          const originalRow = originalData[rowIndex];
+          let whereClause = '';
+          let whereValues = [];
+          
+          if (originalRow.id !== undefined) {
+            whereClause = 'id = ?';
+            whereValues = [originalRow.id];
+          } else {
+            // Build WHERE clause using all original values to uniquely identify the row
+            const columns = Object.keys(originalRow);
+            whereClause = columns.map(col => `\`${col}\` = ?`).join(' AND ');
+            whereValues = columns.map(col => originalRow[col]);
+          }
+          
+          const updateQuery = `UPDATE \`${tableName}\` SET \`${column}\` = ? WHERE ${whereClause}`;
+          await mysqlConnection.execute(updateQuery, [newValue, ...whereValues]);
         }
         
         await mysqlConnection.end();
@@ -379,11 +394,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await client.connect();
         
         for (const change of changes) {
-          const { rowIndex, column, newValue } = change;
+          const { rowIndex, column, newValue, oldValue } = change;
           
-          // Build UPDATE query - assuming we have an id column for identifying rows
-          const updateQuery = `UPDATE "${tableName}" SET "${column}" = $1 WHERE id = $2`;
-          await client.query(updateQuery, [newValue, rowIndex + 1]); // Assuming id starts from 1
+          // Try to find a unique identifier for the row
+          const originalRow = originalData[rowIndex];
+          let whereClause = '';
+          let whereValues = [];
+          let paramIndex = 2; // Start from $2 since $1 is for the new value
+          
+          if (originalRow.id !== undefined) {
+            whereClause = 'id = $2';
+            whereValues = [originalRow.id];
+          } else {
+            // Build WHERE clause using all original values to uniquely identify the row
+            const columns = Object.keys(originalRow);
+            whereClause = columns.map(col => `"${col}" = $${paramIndex++}`).join(' AND ');
+            whereValues = columns.map(col => originalRow[col]);
+          }
+          
+          const updateQuery = `UPDATE "${tableName}" SET "${column}" = $1 WHERE ${whereClause}`;
+          await client.query(updateQuery, [newValue, ...whereValues]);
         }
         
         await client.end();
