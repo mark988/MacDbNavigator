@@ -95,7 +95,7 @@ export function DatabaseSidebar() {
     }
   };
 
-  const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
+  const handleNewQuery = (dbName: string, connectionId: number) => {
     const connection = connections.find(c => c.id === connectionId);
     if (connection) {
       addTab({
@@ -103,7 +103,23 @@ export function DatabaseSidebar() {
         type: 'query',
         connectionId,
       });
+      toast({
+        title: "新查询已创建",
+        description: `已为数据库 ${dbName} 创建新的查询窗口`,
+      });
     }
+  };
+
+  const handleBackupDatabase = (dbName: string, connectionId: number) => {
+    toast({
+      title: "备份功能",
+      description: `数据库 ${dbName} 的备份功能正在开发中`,
+    });
+  };
+
+  const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
+    // This is kept for backward compatibility
+    handleNewQuery(dbName, connectionId);
   };
 
   const handleTableClick = (tableName: string, connectionId: number) => {
@@ -200,7 +216,7 @@ export function DatabaseSidebar() {
                 expandedTables={expandedTables}
                 onToggle={() => handleConnectionToggle(connection.id)}
                 onDatabaseClick={handleDatabaseClick}
-                onDatabaseRightClick={handleDatabaseRightClick}
+                onDatabaseRightClick={handleNewQuery}
                 onTableClick={handleTableClick}
                 onTableDoubleClick={handleTableDoubleClick}
                 getConnectionStatus={getConnectionStatus}
@@ -327,7 +343,7 @@ function ConnectionItem({
                   isExpanded={expandedDatabases.has(`${connection.id}-${connection.database}`)}
                   expandedTables={expandedTables}
                   onDatabaseClick={onDatabaseClick}
-                  onDatabaseRightClick={onDatabaseRightClick}
+                  onDatabaseRightClick={handleNewQuery}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
                   isCurrent={true}
@@ -343,7 +359,7 @@ function ConnectionItem({
                   isExpanded={expandedDatabases.has(`${connection.id}-${dbName}`)}
                   expandedTables={expandedTables}
                   onDatabaseClick={onDatabaseClick}
-                  onDatabaseRightClick={onDatabaseRightClick}
+                  onDatabaseRightClick={handleNewQuery}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
                 />
@@ -385,22 +401,31 @@ function DatabaseItem({
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <div 
-            className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
-            onContextMenu={(e) => {
-              e.preventDefault();
+          <DatabaseContextMenu
+            databaseName={dbName}
+            connectionId={connectionId}
+            onNewQuery={(dbName, connectionId) => {
+              // We'll need to pass these handlers from the parent
               onDatabaseRightClick(dbName, connectionId);
             }}
+            onBackup={(dbName, connectionId) => {
+              // Backup functionality placeholder
+              console.log(`Backup ${dbName} from connection ${connectionId}`);
+            }}
           >
-            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-              isExpanded ? 'rotate-90' : ''
-            }`} />
-            <Database className="w-4 h-4 mr-2" />
-            <span className={isCurrent ? 'font-medium' : ''}>{dbName}</span>
-            {isCurrent && (
-              <span className="ml-2 text-xs text-blue-500 dark:text-blue-400">(current)</span>
-            )}
-          </div>
+            <div 
+              className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            >
+              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+                isExpanded ? 'rotate-90' : ''
+              }`} />
+              <Database className="w-4 h-4 mr-2" />
+              <span className={isCurrent ? 'font-medium' : ''}>{dbName}</span>
+              {isCurrent && (
+                <span className="ml-2 text-xs text-blue-500 dark:text-blue-400">(current)</span>
+              )}
+            </div>
+          </DatabaseContextMenu>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="ml-6 space-y-1">
