@@ -335,7 +335,7 @@ export function QueryResults() {
 export function QueryPagination() {
   const { queryResults, currentPage, setCurrentPage } = useDatabaseStore();
 
-  if (!queryResults || queryResults.rows.length <= ROWS_PER_PAGE) {
+  if (!queryResults || queryResults.rows.length === 0) {
     return null;
   }
 
