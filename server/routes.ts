@@ -344,6 +344,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { tableName } = req.params;
       const { changes, originalData, database, schema, fullQuery } = req.body;
 
+      console.log('Update request data:', {
+        connectionId,
+        tableName,
+        database,
+        schema,
+        fullQuery,
+        changesCount: changes?.length
+      });
+
       const connection = await storage.getConnection(connectionId);
       if (!connection) {
         return res.status(404).json({ error: 'Connection not found' });
@@ -402,6 +411,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         client.database = targetDatabase;
         
         await client.connect();
+        
+        // First, let's check what tables exist in the current database
+        try {
+          const tableCheckQuery = `
+            SELECT schemaname, tablename 
+            FROM pg_tables 
+            WHERE tablename LIKE '%order%' OR tablename LIKE '%t_order%'
+            ORDER BY schemaname, tablename
+          `;
+          const tableResult = await client.query(tableCheckQuery);
+          console.log('Available tables matching pattern:', tableResult.rows);
+        } catch (err) {
+          console.log('Error checking tables:', err);
+        }
         
         for (const change of changes) {
           const { rowIndex, column, newValue, oldValue } = change;
