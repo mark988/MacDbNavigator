@@ -87,24 +87,24 @@ export default function DatabaseManager() {
 
         {/* Main Content Area */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex flex-col flex-1">
+          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex flex-col h-full">
             {/* Tab Content */}
             <div className="flex flex-col flex-1 overflow-hidden">
               {tabs.map((tab) => (
                 <TabsContent
                   key={tab.id}
                   value={tab.id}
-                  className="flex flex-col flex-1 overflow-hidden m-0 p-0"
+                  className="flex flex-col h-full overflow-hidden m-0 p-0"
                 >
                   {tab.type === 'query' ? (
-                    <div className="flex flex-col flex-1 overflow-hidden">
+                    <div className="flex flex-col h-full">
                       <SQLEditor
                         tabId={tab.id}
                         content={tab.content}
                         connectionId={tab.connectionId}
                         databaseName={tab.databaseName}
                       />
-                      <div className="flex flex-col flex-1 overflow-hidden">
+                      <div className="flex flex-col flex-1 min-h-0">
                         <QueryResults />
                         <QueryPagination />
                       </div>
