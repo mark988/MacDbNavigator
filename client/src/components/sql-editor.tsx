@@ -268,13 +268,14 @@ export function SQLEditor({ tabId, content, connectionId }: SQLEditorProps) {
       {/* SQL Editor */}
       <div className="flex-1 bg-white dark:bg-gray-900 p-4">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {isEditorReady && !monaco ? (
-            // Fallback textarea if Monaco fails to load
+          {!monaco || !isEditorReady ? (
+            // Simple textarea editor as primary option
             <textarea
               value={content}
               onChange={(e) => updateTabContent(tabId, e.target.value)}
-              className="w-full h-full p-4 font-mono text-sm bg-transparent resize-none outline-none"
+              className="w-full h-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none outline-none border-none"
               placeholder="Enter your SQL query here..."
+              style={{ fontSize: '14px', lineHeight: '1.5' }}
             />
           ) : (
             <div ref={editorRef} className="w-full h-full" />
