@@ -164,16 +164,29 @@ function validateSQL(sql: string): string[] {
   const errors: string[] = [];
   if (!sql.trim()) return errors;
   
-  const upperSQL = sql.toUpperCase().trim();
+  // Remove comments before validation to avoid false positives
+  const lines = sql.split('\n');
+  const sqlWithoutComments = lines
+    .map(line => {
+      const commentIndex = line.indexOf('--');
+      return commentIndex !== -1 ? line.substring(0, commentIndex) : line;
+    })
+    .join('\n')
+    .trim();
   
-  // Basic syntax checks
+  // If only comments remain, no validation errors
+  if (!sqlWithoutComments) return errors;
+  
+  const upperSQL = sqlWithoutComments.toUpperCase().trim();
+  
+  // Basic syntax checks - only for non-comment content
   if (!upperSQL.match(/^(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|SHOW|DESCRIBE|EXPLAIN)/)) {
     errors.push('SQL statement should start with a valid command (SELECT, INSERT, UPDATE, etc.)');
   }
   
-  // Check for unclosed quotes
-  const singleQuotes = (sql.match(/'/g) || []).length;
-  const doubleQuotes = (sql.match(/"/g) || []).length;
+  // Check for unclosed quotes (only in non-comment parts)
+  const singleQuotes = (sqlWithoutComments.match(/'/g) || []).length;
+  const doubleQuotes = (sqlWithoutComments.match(/"/g) || []).length;
   if (singleQuotes % 2 !== 0) {
     errors.push('Unclosed single quote detected');
   }
@@ -181,9 +194,9 @@ function validateSQL(sql: string): string[] {
     errors.push('Unclosed double quote detected');
   }
   
-  // Check for basic parentheses matching
-  const openParens = (sql.match(/\(/g) || []).length;
-  const closeParens = (sql.match(/\)/g) || []).length;
+  // Check for basic parentheses matching (only in non-comment parts)
+  const openParens = (sqlWithoutComments.match(/\(/g) || []).length;
+  const closeParens = (sqlWithoutComments.match(/\)/g) || []).length;
   if (openParens !== closeParens) {
     errors.push('Mismatched parentheses');
   }
