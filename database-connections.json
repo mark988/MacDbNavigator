@@ -187,8 +187,40 @@
       "executionTime": 1581,
       "rowCount": null,
       "createdAt": "2025-06-01T11:44:21.386Z"
+    },
+    {
+      "id": 21,
+      "connectionId": 2,
+      "query": "\nselect * from t_product",
+      "executionTime": 1526,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:46:32.643Z"
+    },
+    {
+      "id": 22,
+      "connectionId": 2,
+      "query": "SELECT id FROM t_order",
+      "executionTime": 866,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T11:46:37.895Z"
+    },
+    {
+      "id": 23,
+      "connectionId": 2,
+      "query": "SELECT * FROM t_order\n\nselect * from t_product",
+      "executionTime": 888,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:46:45.572Z"
+    },
+    {
+      "id": 24,
+      "connectionId": 2,
+      "query": "SELECT * FROM t_order ;\n\nselect * from t_product",
+      "executionTime": 882,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:46:54.998Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 21
+  "nextHistoryId": 25
 }

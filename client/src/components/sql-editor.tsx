@@ -26,7 +26,46 @@ const SQL_KEYWORDS = [
 // Simple SQL token analysis for highlighting
 function analyzeSQL(sql: string) {
   const tokens = [];
-  const words = sql.split(/(\s+|[(),;])/);
+  const lines = sql.split('\n');
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Check for comment starting with --
+    const commentIndex = line.indexOf('--');
+    
+    if (commentIndex !== -1) {
+      // Split line into before and after comment
+      const beforeComment = line.substring(0, commentIndex);
+      const commentPart = line.substring(commentIndex);
+      
+      // Process the part before comment normally
+      if (beforeComment.trim()) {
+        const beforeTokens = parseLineTokens(beforeComment);
+        tokens.push(...beforeTokens);
+      }
+      
+      // Add the comment as a single token
+      tokens.push({ text: commentPart, type: 'comment' });
+    } else {
+      // No comment, process entire line normally
+      const lineTokens = parseLineTokens(line);
+      tokens.push(...lineTokens);
+    }
+    
+    // Add newline if not the last line
+    if (i < lines.length - 1) {
+      tokens.push({ text: '\n', type: 'whitespace' });
+    }
+  }
+  
+  return tokens;
+}
+
+// Helper function to parse tokens from a line (without comments)
+function parseLineTokens(text: string) {
+  const tokens = [];
+  const words = text.split(/(\s+|[(),;])/);
   
   for (const word of words) {
     if (!word.trim()) {
@@ -41,8 +80,6 @@ function analyzeSQL(sql: string) {
       tokens.push({ text: word, type: 'number' });
     } else if (/^'.*'$/.test(word) || /^".*"$/.test(word)) {
       tokens.push({ text: word, type: 'string' });
-    } else if (word.startsWith('--')) {
-      tokens.push({ text: word, type: 'comment' });
     } else {
       tokens.push({ text: word, type: 'text' });
     }
@@ -343,7 +380,90 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       return;
     }
 
+    // If no specific selection, check if there are multiple statements separated by semicolons
+    if (!selectedText.trim() && queryToExecute.includes(';')) {
+      // Split by semicolon and execute each statement
+      const statements = queryToExecute
+        .split(';')
+        .map(stmt => stmt.trim())
+        .filter(stmt => stmt.length > 0);
+      
+      if (statements.length > 1) {
+        // Execute multiple statements sequentially
+        executeMultipleStatements(statements);
+        return;
+      }
+    }
+
     executeQueryMutation.mutate(queryToExecute);
+  };
+
+  const executeMultipleStatements = async (statements: string[]) => {
+    setIsExecuting(true);
+    const results = [];
+    
+    try {
+      for (let i = 0; i < statements.length; i++) {
+        const statement = statements[i];
+        
+        toast({
+          title: `Executing statement ${i + 1} of ${statements.length}`,
+          description: statement.substring(0, 50) + (statement.length > 50 ? '...' : ''),
+        });
+
+        const response = await apiRequest(`/api/connections/${connectionId}/query`, {
+          method: 'POST',
+          body: JSON.stringify({
+            query: statement,
+            database: databaseName
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Statement ${i + 1} failed: ${errorData}`);
+        }
+
+        const result = await response.json();
+        results.push({
+          statement: statement,
+          result: result
+        });
+      }
+
+      // Show combined results
+      const totalRows = results.reduce((sum, r) => sum + (r.result.rowCount || 0), 0);
+      setQueryResults({
+        columns: ['Statement', 'Status', 'Rows Affected'],
+        rows: results.map((r, i) => ({
+          'Statement': `${i + 1}. ${r.statement.substring(0, 50)}${r.statement.length > 50 ? '...' : ''}`,
+          'Status': 'Success',
+          'Rows Affected': r.result.rowCount || 0
+        })),
+        rowCount: totalRows,
+        executionTime: 0
+      });
+
+      toast({
+        title: "All statements executed successfully",
+        description: `${statements.length} statements completed, ${totalRows} total rows affected`,
+      });
+
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
+
+    } catch (error: any) {
+      toast({
+        title: "Multi-statement execution failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsExecuting(false);
+    }
   };
 
   const formatQuery = () => {
