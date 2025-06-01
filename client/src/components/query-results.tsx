@@ -100,7 +100,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       {/* Results Content */}
       <div className="flex-1 overflow-auto">
         {queryResult.rows.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+          <div className="p-4 text-center text-gray-500 dark:text-gray-400">
             <p>No data found</p>
           </div>
         ) : viewMode === 'table' ? (
