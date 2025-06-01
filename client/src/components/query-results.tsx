@@ -7,7 +7,7 @@ import { useDatabaseStore } from '@/lib/database-store';
 import { Download, Save, X, Edit2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const ROWS_PER_PAGE = 100;
+const ROWS_PER_PAGE = 30;
 
 interface SingleQueryResultProps {
   queryResult: any;
