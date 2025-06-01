@@ -49,7 +49,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   };
 
   return (
-    <div className="h-80 flex flex-col border-t border-gray-200 dark:border-gray-700">
+    <div className="h-64 flex flex-col border-t border-gray-200 dark:border-gray-700">
       {/* Results Header */}
       <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -166,7 +166,7 @@ export function QueryResults() {
 
   if (!queryResults) {
     return (
-      <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
+      <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
         <p>Run a query to see results</p>
       </div>
     );
@@ -175,7 +175,7 @@ export function QueryResults() {
   // Handle multi-statement results
   if (queryResults.multiStatementResults && queryResults.multiStatementResults.length > 0) {
     return (
-      <div className="h-80 flex flex-col border-t border-gray-200 dark:border-gray-700">
+      <div className="h-64 flex flex-col border-t border-gray-200 dark:border-gray-700">
         <Tabs defaultValue="statement-0" className="flex-1 flex flex-col">
           <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0 flex-shrink-0">
             {queryResults.multiStatementResults.map((statementResult, index) => (
