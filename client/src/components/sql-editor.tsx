@@ -29,22 +29,27 @@ function highlightSQL(sql: string): string {
   
   let highlighted = sql;
   
-  // Highlight SQL keywords
+  // Escape HTML first
+  highlighted = highlighted.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // Highlight SQL keywords (case insensitive)
   SQL_KEYWORDS.forEach(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-    highlighted = highlighted.replace(regex, `<span class="text-blue-600 dark:text-blue-400 font-semibold">${keyword.toUpperCase()}</span>`);
+    highlighted = highlighted.replace(regex, (match) => {
+      return `<span style="color: #2563eb; font-weight: 600;">${match.toUpperCase()}</span>`;
+    });
   });
   
   // Highlight strings
-  highlighted = highlighted.replace(/'([^']*)'/g, '<span class="text-green-600 dark:text-green-400">\'$1\'</span>');
-  highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="text-green-600 dark:text-green-400">"$1"</span>');
+  highlighted = highlighted.replace(/'([^']*)'/g, '<span style="color: #16a34a;">\'$1\'</span>');
+  highlighted = highlighted.replace(/"([^"]*)"/g, '<span style="color: #16a34a;">"$1"</span>');
   
   // Highlight numbers
-  highlighted = highlighted.replace(/\b\d+(\.\d+)?\b/g, '<span class="text-purple-600 dark:text-purple-400">$&</span>');
+  highlighted = highlighted.replace(/\b\d+(\.\d+)?\b/g, '<span style="color: #9333ea;">$&</span>');
   
   // Highlight comments
-  highlighted = highlighted.replace(/--.*$/gm, '<span class="text-gray-500 dark:text-gray-400 italic">$&</span>');
-  highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="text-gray-500 dark:text-gray-400 italic">$&</span>');
+  highlighted = highlighted.replace(/--.*$/gm, '<span style="color: #6b7280; font-style: italic;">$&</span>');
+  highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #6b7280; font-style: italic;">$&</span>');
   
   return highlighted;
 }
