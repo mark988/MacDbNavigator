@@ -90,12 +90,15 @@ export default function DatabaseManager() {
                     className="flex-1 flex flex-col overflow-hidden m-0 p-0"
                   >
                     {tab.type === 'query' ? (
-                      <SQLEditor
-                        tabId={tab.id}
-                        content={tab.content}
-                        connectionId={tab.connectionId}
-                        databaseName={tab.databaseName}
-                      />
+                      <div className="flex-1 flex flex-col overflow-hidden">
+                        <SQLEditor
+                          tabId={tab.id}
+                          content={tab.content}
+                          connectionId={tab.connectionId}
+                          databaseName={tab.databaseName}
+                        />
+                        <QueryResults />
+                      </div>
                     ) : (
                       <div className="flex-1 flex items-center justify-center">
                         <div className="text-center text-gray-500 dark:text-gray-400">
@@ -109,20 +112,6 @@ export default function DatabaseManager() {
               </div>
             </Tabs>
           </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {activeTab && activeTab.type === 'query' && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-hidden">
-                {/* The SQL Editor is rendered in the TabsContent above */}
-              </div>
-              
-              {/* Query Results Panel */}
-              <QueryResults />
-            </div>
-          )}
         </div>
       </div>
 
