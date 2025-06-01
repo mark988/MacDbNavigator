@@ -47,6 +47,11 @@ export type QueryResult = {
   rows: Record<string, any>[];
   rowCount: number;
   executionTime: number;
+  multiStatementResults?: Array<{
+    statement: string;
+    result: QueryResult;
+    index: number;
+  }>;
 };
 
 export type DatabaseObject = {

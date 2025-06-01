@@ -275,8 +275,32 @@
       "executionTime": 884,
       "rowCount": 2,
       "createdAt": "2025-06-01T11:54:56.621Z"
+    },
+    {
+      "id": 32,
+      "connectionId": 2,
+      "query": "-- SELECT  * FROM t_order",
+      "executionTime": 1520,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:57:34.024Z"
+    },
+    {
+      "id": 33,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_product;",
+      "executionTime": 2599,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:58:26.892Z"
+    },
+    {
+      "id": 34,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_order;",
+      "executionTime": 1582,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T11:58:31.571Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 32
+  "nextHistoryId": 35
 }

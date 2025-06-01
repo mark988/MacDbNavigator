@@ -442,26 +442,23 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
         const result = await response.json();
         results.push({
           statement: statement,
-          result: result
+          result: result,
+          index: i + 1
         });
       }
 
-      // Show combined results
-      const totalRows = results.reduce((sum, r) => sum + (r.result.rowCount || 0), 0);
+      // Set results in a special multi-statement format
       setQueryResults({
-        columns: ['Statement', 'Status', 'Rows Affected'],
-        rows: results.map((r, i) => ({
-          'Statement': `${i + 1}. ${r.statement.substring(0, 50)}${r.statement.length > 50 ? '...' : ''}`,
-          'Status': 'Success',
-          'Rows Affected': r.result.rowCount || 0
-        })),
-        rowCount: totalRows,
-        executionTime: 0
+        columns: ['Multi-Statement Results'],
+        rows: [],
+        rowCount: 0,
+        executionTime: 0,
+        multiStatementResults: results // Add this custom property
       });
 
       toast({
         title: "All statements executed successfully",
-        description: `${statements.length} statements completed, ${totalRows} total rows affected`,
+        description: `${statements.length} statements completed successfully`,
       });
 
       // Invalidate queries to refresh data
