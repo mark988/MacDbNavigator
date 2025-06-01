@@ -108,8 +108,11 @@ export class MemStorage implements IStorage {
   async addQueryHistory(insertHistory: InsertQueryHistory): Promise<QueryHistory> {
     const id = this.currentHistoryId++;
     const history: QueryHistory = {
-      ...insertHistory,
       id,
+      query: insertHistory.query,
+      connectionId: insertHistory.connectionId ?? null,
+      executionTime: insertHistory.executionTime ?? null,
+      rowCount: insertHistory.rowCount ?? null,
       createdAt: new Date(),
     };
     this.queryHistories.set(id, history);

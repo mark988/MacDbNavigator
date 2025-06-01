@@ -27,9 +27,9 @@ export function ConnectionModal() {
     resolver: zodResolver(insertConnectionSchema),
     defaultValues: {
       name: '',
-      type: 'mysql',
+      type: 'postgresql',
       host: 'localhost',
-      port: 3306,
+      port: 5432,
       database: '',
       username: '',
       password: '',
@@ -158,9 +158,12 @@ export function ConnectionModal() {
 
   return (
     <Dialog open={isConnectionModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="connection-modal-description">
         <DialogHeader>
           <DialogTitle>New Database Connection</DialogTitle>
+          <div id="connection-modal-description" className="sr-only">
+            Create a new database connection by entering your database credentials
+          </div>
         </DialogHeader>
         
         <Form {...form}>
