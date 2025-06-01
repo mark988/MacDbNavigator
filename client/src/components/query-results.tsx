@@ -107,12 +107,12 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           {viewMode === 'table' ? (
             <>
               {/* Fixed Header */}
-              <div className="bg-gray-50 dark:bg-gray-800 border-b-2 border-gray-300 dark:border-gray-600 flex-shrink-0">
+              <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-500 flex-shrink-0">
                 <div className="flex">
                   {queryResult.columns.map((column: string) => (
                     <div
                       key={column}
-                      className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-32 flex-1 border-r border-gray-200 dark:border-gray-600 last:border-r-0"
+                      className="px-3 py-2 font-medium text-xs text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-32 flex-1 border-r border-gray-200 dark:border-gray-600 last:border-r-0 uppercase tracking-wider"
                     >
                       {column}
                     </div>
@@ -126,17 +126,17 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
                   {currentRows.map((row: any, index: number) => (
                     <div
                       key={startIndex + index}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex"
+                      className="hover:bg-blue-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex transition-colors duration-150"
                     >
                       {queryResult.columns.map((column: string) => (
                         <div
                           key={column}
-                          className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap min-w-32 flex-1 border-r border-gray-200 dark:border-gray-600 last:border-r-0"
+                          className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap min-w-32 flex-1 border-r border-gray-100 dark:border-gray-600 last:border-r-0 font-mono"
                         >
                           {row[column] === null || row[column] === undefined ? (
-                            <span className="text-gray-400 italic">NULL</span>
+                            <span className="text-gray-400 italic font-sans">NULL</span>
                           ) : typeof row[column] === 'object' ? (
-                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
+                            <span className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400">
                               {JSON.stringify(row[column])}
                             </span>
                           ) : String(row[column]).length > 100 ? (
