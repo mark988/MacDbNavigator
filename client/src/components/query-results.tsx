@@ -95,11 +95,6 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
             </div>
           </div>
         </div>
-        
-        {/* Statement Display */}
-        <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">
-          {statement}
-        </div>
       </div>
 
       {/* Results Content */}
