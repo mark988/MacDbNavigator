@@ -803,8 +803,16 @@
       "executionTime": 878,
       "rowCount": 51,
       "createdAt": "2025-06-01T14:19:18.628Z"
+    },
+    {
+      "id": 98,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 920,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:20:33.404Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 98
+  "nextHistoryId": 99
 }

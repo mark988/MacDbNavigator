@@ -31,8 +31,11 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   const currentRows = queryResult.rows.slice(startIndex, endIndex);
 
   // Check if this is a table query (simple SELECT from a single table)
-  const isTableQuery = statement.trim().toLowerCase().match(/^select\s+[\*\w\s,]+\s+from\s+(\w+)(\s|$)/);
+  const isTableQuery = statement.trim().toLowerCase().match(/^select\s+.+\s+from\s+(\w+)(\s|$|;)/);
   const tableName = isTableQuery ? isTableQuery[1] : null;
+  
+  console.log('Statement:', statement);
+  console.log('Table name detected:', tableName);
 
   const startEditing = (rowIndex: number, column: string, currentValue: any) => {
     setEditingCell({ rowIndex, column });
@@ -373,8 +376,13 @@ export function QueryResults() {
     );
   }
 
-  // Handle single statement result
-  return <SingleQueryResult queryResult={queryResults} statement="" />;
+  // Handle single statement result - try to get the last executed query from history
+  const { queryHistory, activeConnectionId } = useDatabaseStore();
+  const lastQuery = queryHistory
+    .filter(h => h.connectionId === activeConnectionId)
+    .sort((a, b) => b.id - a.id)[0];
+  
+  return <SingleQueryResult queryResult={queryResults} statement={lastQuery?.query || ""} />;
 }
 
 // Pagination component that will be placed at the bottom of the page

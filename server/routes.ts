@@ -350,7 +350,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (connection.type === 'mysql') {
-        const mysqlConnection = createMySQLConnection(connection);
+        const mysqlConnection = await mysql.createConnection({
+          host: connection.host,
+          port: connection.port,
+          user: connection.username,
+          password: connection.password,
+          database: connection.database,
+        });
         
         for (const change of changes) {
           const { rowIndex, column, newValue } = change;
@@ -360,9 +366,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await mysqlConnection.execute(updateQuery, [newValue, rowIndex + 1]); // Assuming id starts from 1
         }
         
-        mysqlConnection.end();
+        await mysqlConnection.end();
       } else if (connection.type === 'postgresql') {
-        const client = createPostgreSQLClient(connection);
+        const client = new Client({
+          host: connection.host,
+          port: connection.port,
+          user: connection.username,
+          password: connection.password,
+          database: connection.database,
+          ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
+        });
         await client.connect();
         
         for (const change of changes) {
