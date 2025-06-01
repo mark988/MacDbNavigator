@@ -88,6 +88,19 @@ export function DatabaseSidebar() {
   };
 
   const handleTableClick = (tableName: string, connectionId: number) => {
+    const key = `${connectionId}-${tableName}`;
+    if (expandedTables.has(key)) {
+      setExpandedTables(prev => {
+        const newSet = new Set(Array.from(prev));
+        newSet.delete(key);
+        return newSet;
+      });
+    } else {
+      setExpandedTables(prev => new Set([...Array.from(prev), key]));
+    }
+  };
+
+  const handleTableDoubleClick = (tableName: string, connectionId: number) => {
     const connection = connections.find(c => c.id === connectionId);
     if (connection) {
       addTab({
@@ -164,8 +177,12 @@ export function DatabaseSidebar() {
                 connection={connection}
                 isActive={activeConnectionId === connection.id}
                 isExpanded={expandedConnections.has(connection.id)}
+                expandedDatabases={expandedDatabases}
+                expandedTables={expandedTables}
                 onToggle={() => handleConnectionClick(connection)}
-                onTableClick={(tableName) => handleTableClick(tableName, connection.id)}
+                onDatabaseClick={handleDatabaseClick}
+                onTableClick={handleTableClick}
+                onTableDoubleClick={handleTableDoubleClick}
                 getConnectionStatus={getConnectionStatus}
               />
             ))}
@@ -203,8 +220,12 @@ interface ConnectionItemProps {
   connection: Connection;
   isActive: boolean;
   isExpanded: boolean;
+  expandedDatabases: Set<string>;
+  expandedTables: Set<string>;
   onToggle: () => void;
-  onTableClick: (tableName: string) => void;
+  onDatabaseClick: (dbName: string, connectionId: number) => void;
+  onTableClick: (tableName: string, connectionId: number) => void;
+  onTableDoubleClick: (tableName: string, connectionId: number) => void;
   getConnectionStatus: (connection: Connection) => React.ReactNode;
 }
 
@@ -212,8 +233,12 @@ function ConnectionItem({
   connection, 
   isActive, 
   isExpanded, 
+  expandedDatabases,
+  expandedTables,
   onToggle, 
+  onDatabaseClick,
   onTableClick, 
+  onTableDoubleClick,
   getConnectionStatus 
 }: ConnectionItemProps) {
   const { data: databaseInfo, isLoading } = useQuery({
@@ -255,24 +280,160 @@ function ConnectionItem({
             </div>
           ) : (
             <>
-              <div className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300">
-                <Database className="w-4 h-4 mr-2" />
-                <span>{connection.database}</span>
-              </div>
-              {databaseInfo?.tables.map((table) => (
-                <div
-                  key={table.name}
-                  className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer ml-6"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onTableClick(table.name);
-                  }}
-                >
-                  <Table className="w-3 h-3 mr-2" />
-                  <span>{table.name}</span>
-                </div>
+              {/* Current Database */}
+              <DatabaseItem
+                dbName={connection.database}
+                connectionId={connection.id}
+                tables={databaseInfo?.tables || []}
+                isExpanded={expandedDatabases.has(`${connection.id}-${connection.database}`)}
+                expandedTables={expandedTables}
+                onDatabaseClick={onDatabaseClick}
+                onTableClick={onTableClick}
+                onTableDoubleClick={onTableDoubleClick}
+                isCurrent={true}
+              />
+              
+              {/* Other Databases */}
+              {databaseInfo?.databases.filter(db => db !== connection.database).map((dbName) => (
+                <DatabaseItem
+                  key={dbName}
+                  dbName={dbName}
+                  connectionId={connection.id}
+                  tables={[]}
+                  isExpanded={expandedDatabases.has(`${connection.id}-${dbName}`)}
+                  expandedTables={expandedTables}
+                  onDatabaseClick={onDatabaseClick}
+                  onTableClick={onTableClick}
+                  onTableDoubleClick={onTableDoubleClick}
+                  isCurrent={false}
+                />
               ))}
             </>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
+interface DatabaseItemProps {
+  dbName: string;
+  connectionId: number;
+  tables: any[];
+  isExpanded: boolean;
+  expandedTables: Set<string>;
+  onDatabaseClick: (dbName: string, connectionId: number) => void;
+  onTableClick: (tableName: string, connectionId: number) => void;
+  onTableDoubleClick: (tableName: string, connectionId: number) => void;
+  isCurrent: boolean;
+}
+
+function DatabaseItem({
+  dbName,
+  connectionId,
+  tables,
+  isExpanded,
+  expandedTables,
+  onDatabaseClick,
+  onTableClick,
+  onTableDoubleClick,
+  isCurrent
+}: DatabaseItemProps) {
+  return (
+    <div>
+      <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
+            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+              isExpanded ? 'rotate-90' : ''
+            }`} />
+            <Database className="w-4 h-4 mr-2" />
+            <span className={isCurrent ? 'font-medium' : ''}>{dbName}</span>
+            {isCurrent && (
+              <span className="ml-2 text-xs text-blue-500 dark:text-blue-400">(current)</span>
+            )}
+          </div>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent className="ml-6 space-y-1">
+          {tables.map((table) => (
+            <TableItem
+              key={table.name}
+              tableName={table.name}
+              connectionId={connectionId}
+              isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
+              onTableClick={onTableClick}
+              onTableDoubleClick={onTableDoubleClick}
+            />
+          ))}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
+interface TableItemProps {
+  tableName: string;
+  connectionId: number;
+  isExpanded: boolean;
+  onTableClick: (tableName: string, connectionId: number) => void;
+  onTableDoubleClick: (tableName: string, connectionId: number) => void;
+}
+
+function TableItem({
+  tableName,
+  connectionId,
+  isExpanded,
+  onTableClick,
+  onTableDoubleClick
+}: TableItemProps) {
+  const { data: tableStructure, isLoading } = useQuery({
+    queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'],
+    queryFn: async () => {
+      const res = await fetch(`/api/connections/${connectionId}/tables/${tableName}/columns`);
+      if (!res.ok) throw new Error('Failed to fetch table structure');
+      return res.json() as Promise<TableStructure>;
+    },
+    enabled: isExpanded,
+  });
+
+  return (
+    <div>
+      <Collapsible open={isExpanded} onOpenChange={() => onTableClick(tableName, connectionId)}>
+        <CollapsibleTrigger asChild>
+          <div 
+            className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onTableDoubleClick(tableName, connectionId);
+            }}
+          >
+            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+              isExpanded ? 'rotate-90' : ''
+            }`} />
+            <Table className="w-3 h-3 mr-2" />
+            <span>{tableName}</span>
+          </div>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent className="ml-6 space-y-0.5">
+          {isLoading ? (
+            <div className="flex items-center p-1 text-xs text-gray-500">
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              Loading columns...
+            </div>
+          ) : (
+            tableStructure?.columns.map((column) => (
+              <div
+                key={column.name}
+                className="flex items-center p-1 text-xs text-gray-500 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded"
+                title={`${column.type}${column.nullable ? ' (nullable)' : ' (not null)'}`}
+              >
+                <Columns className="w-3 h-3 mr-2" />
+                <span className="font-mono">{column.name}</span>
+                <span className="ml-2 text-gray-400">({column.type})</span>
+              </div>
+            ))
           )}
         </CollapsibleContent>
       </Collapsible>
