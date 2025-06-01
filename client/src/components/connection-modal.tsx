@@ -119,6 +119,10 @@ export function ConnectionModal() {
           title: "Connection successful",
           description: "Successfully connected to the database",
         });
+        // Clean up the temporary connection after successful test
+        await fetch(`/api/connections/${connection.id}`, {
+          method: 'DELETE',
+        });
       } else {
         setTestStatus('error');
         setTestError(testResult.error || 'Connection failed');
@@ -127,10 +131,7 @@ export function ConnectionModal() {
           description: testResult.error || 'Unable to connect to the database',
           variant: "destructive",
         });
-      }
-
-      // Clean up the temporary connection if test failed
-      if (!testResult.connected) {
+        // Clean up the temporary connection after failed test
         await fetch(`/api/connections/${connection.id}`, {
           method: 'DELETE',
         });

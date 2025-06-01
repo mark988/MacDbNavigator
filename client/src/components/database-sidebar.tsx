@@ -295,17 +295,15 @@ function ConnectionItem({
               
               {/* Other Databases */}
               {databaseInfo?.databases.filter(db => db !== connection.database).map((dbName) => (
-                <DatabaseItem
+                <OtherDatabaseItem
                   key={dbName}
                   dbName={dbName}
                   connectionId={connection.id}
-                  tables={[]}
                   isExpanded={expandedDatabases.has(`${connection.id}-${dbName}`)}
                   expandedTables={expandedTables}
                   onDatabaseClick={onDatabaseClick}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
-                  isCurrent={false}
                 />
               ))}
             </>
@@ -434,6 +432,68 @@ function TableItem({
                 <span className="ml-2 text-gray-400">({column.type})</span>
               </div>
             ))
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
+interface OtherDatabaseItemProps {
+  dbName: string;
+  connectionId: number;
+  isExpanded: boolean;
+  expandedTables: Set<string>;
+  onDatabaseClick: (dbName: string, connectionId: number) => void;
+  onTableClick: (tableName: string, connectionId: number) => void;
+  onTableDoubleClick: (tableName: string, connectionId: number) => void;
+}
+
+function OtherDatabaseItem({
+  dbName,
+  connectionId,
+  isExpanded,
+  expandedTables,
+  onDatabaseClick,
+  onTableClick,
+  onTableDoubleClick
+}: OtherDatabaseItemProps) {
+  const { data: databaseInfo, isLoading } = useQuery({
+    queryKey: ['/api/connections', connectionId, 'databases', dbName],
+    queryFn: async () => {
+      const res = await fetch(`/api/connections/${connectionId}/databases`);
+      if (!res.ok) throw new Error('Failed to fetch database info');
+      const data = await res.json() as DatabaseInfo;
+      // For other databases, we need to get their tables separately
+      // This is a simplified approach - in a real app you'd have a separate endpoint
+      return { databases: [], tables: [] };
+    },
+    enabled: isExpanded,
+  });
+
+  return (
+    <div>
+      <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
+        <CollapsibleTrigger asChild>
+          <div className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
+            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+              isExpanded ? 'rotate-90' : ''
+            }`} />
+            <Database className="w-4 h-4 mr-2" />
+            <span>{dbName}</span>
+          </div>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent className="ml-6 space-y-1">
+          {isLoading ? (
+            <div className="flex items-center p-1 text-xs text-gray-500">
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              Loading tables...
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500 p-1">
+              Switch to this database to view its tables
+            </div>
           )}
         </CollapsibleContent>
       </Collapsible>
