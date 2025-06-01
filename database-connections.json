@@ -75,8 +75,16 @@
       "executionTime": 881,
       "rowCount": null,
       "createdAt": "2025-06-01T11:19:57.161Z"
+    },
+    {
+      "id": 7,
+      "connectionId": 2,
+      "query": "SELECT * FROM t_order LIMIT 5",
+      "executionTime": 895,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T11:22:32.305Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 7
+  "nextHistoryId": 8
 }

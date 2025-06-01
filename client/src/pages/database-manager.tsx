@@ -94,6 +94,7 @@ export default function DatabaseManager() {
                         tabId={tab.id}
                         content={tab.content}
                         connectionId={tab.connectionId}
+                        databaseName={tab.databaseName}
                       />
                     ) : (
                       <div className="flex-1 flex items-center justify-center">
