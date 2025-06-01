@@ -723,8 +723,40 @@
       "executionTime": 881,
       "rowCount": 51,
       "createdAt": "2025-06-01T13:26:35.289Z"
+    },
+    {
+      "id": 88,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 880,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:26:52.304Z"
+    },
+    {
+      "id": 89,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 908,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:05:36.653Z"
+    },
+    {
+      "id": 90,
+      "connectionId": 2,
+      "query": "select * from t_order ",
+      "executionTime": 956,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:05:42.085Z"
+    },
+    {
+      "id": 91,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 925,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:06:51.321Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 88
+  "nextHistoryId": 92
 }

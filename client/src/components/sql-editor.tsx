@@ -572,13 +572,13 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
 
       {/* Progress Bar */}
       {isExecuting && (
-        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="text-xs text-gray-600 dark:text-gray-400">
               Executing query...
             </div>
-            <Progress value={progress} className="flex-1 h-2" />
-            <div className="text-xs text-gray-600 dark:text-gray-400">
+            <Progress value={progress} className="flex-1 h-1" />
+            <div className="text-xs text-gray-500 dark:text-gray-500 min-w-[35px] text-right">
               {Math.round(progress)}%
             </div>
           </div>
