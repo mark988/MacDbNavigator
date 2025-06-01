@@ -544,19 +544,24 @@ function OtherDatabaseItem({
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <div 
-            className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
-            onContextMenu={(e) => {
-              e.preventDefault();
-              onDatabaseRightClick(dbName, connectionId);
+          <DatabaseContextMenu
+            databaseName={dbName}
+            connectionId={connectionId}
+            onNewQuery={onDatabaseRightClick}
+            onBackup={(dbName, connectionId) => {
+              console.log(`Backup ${dbName} from connection ${connectionId}`);
             }}
           >
-            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-              isExpanded ? 'rotate-90' : ''
-            }`} />
-            <Database className="w-4 h-4 mr-2" />
-            <span>{dbName}</span>
-          </div>
+            <div 
+              className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            >
+              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+                isExpanded ? 'rotate-90' : ''
+              }`} />
+              <Database className="w-4 h-4 mr-2" />
+              <span>{dbName}</span>
+            </div>
+          </DatabaseContextMenu>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="ml-6 space-y-1">
