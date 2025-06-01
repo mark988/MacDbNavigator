@@ -358,6 +358,7 @@ interface DatabaseItemProps {
   isExpanded: boolean;
   expandedTables: Set<string>;
   onDatabaseClick: (dbName: string, connectionId: number) => void;
+  onDatabaseRightClick: (dbName: string, connectionId: number) => void;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
   isCurrent: boolean;
@@ -370,6 +371,7 @@ function DatabaseItem({
   isExpanded,
   expandedTables,
   onDatabaseClick,
+  onDatabaseRightClick,
   onTableClick,
   onTableDoubleClick,
   isCurrent
@@ -378,7 +380,13 @@ function DatabaseItem({
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <div className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
+          <div 
+            className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              onDatabaseRightClick(dbName, connectionId);
+            }}
+          >
             <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
               isExpanded ? 'rotate-90' : ''
             }`} />
@@ -482,6 +490,7 @@ interface OtherDatabaseItemProps {
   isExpanded: boolean;
   expandedTables: Set<string>;
   onDatabaseClick: (dbName: string, connectionId: number) => void;
+  onDatabaseRightClick: (dbName: string, connectionId: number) => void;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
 }
@@ -492,6 +501,7 @@ function OtherDatabaseItem({
   isExpanded,
   expandedTables,
   onDatabaseClick,
+  onDatabaseRightClick,
   onTableClick,
   onTableDoubleClick
 }: OtherDatabaseItemProps) {
@@ -509,7 +519,13 @@ function OtherDatabaseItem({
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <div className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer">
+          <div 
+            className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              onDatabaseRightClick(dbName, connectionId);
+            }}
+          >
             <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
               isExpanded ? 'rotate-90' : ''
             }`} />
