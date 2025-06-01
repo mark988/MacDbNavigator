@@ -619,8 +619,32 @@
       "executionTime": 1933,
       "rowCount": 51,
       "createdAt": "2025-06-01T13:15:23.308Z"
+    },
+    {
+      "id": 75,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 880,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:16:20.138Z"
+    },
+    {
+      "id": 76,
+      "connectionId": 2,
+      "query": "select * from t_order ",
+      "executionTime": 870,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:16:39.596Z"
+    },
+    {
+      "id": 77,
+      "connectionId": 2,
+      "query": "select * from t_order ",
+      "executionTime": 888,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:16:47.936Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 75
+  "nextHistoryId": 78
 }

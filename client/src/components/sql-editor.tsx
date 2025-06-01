@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Play, Square, Save, FileText, AlertTriangle } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -223,6 +224,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [syntaxErrors, setSyntaxErrors] = useState<string[]>([]);
   const [selectedText, setSelectedText] = useState<string>('');
+  const [progress, setProgress] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -243,23 +245,44 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
         throw new Error('No active connection selected');
       }
 
-      const response = await fetch(`/api/connections/${connId}/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, database: databaseName }),
-      });
+      // Start progress animation
+      setProgress(0);
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 15;
+        });
+      }, 200);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Query execution failed');
+      try {
+        const response = await fetch(`/api/connections/${connId}/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, database: databaseName }),
+        });
+
+        clearInterval(progressInterval);
+        setProgress(100);
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Query execution failed');
+        }
+
+        return response.json() as Promise<QueryResult>;
+      } catch (error) {
+        clearInterval(progressInterval);
+        setProgress(0);
+        throw error;
       }
-
-      return response.json() as Promise<QueryResult>;
     },
     onMutate: () => {
       setIsExecuting(true);
+      setProgress(0);
     },
     onSuccess: (data) => {
+      setProgress(100);
+      setTimeout(() => setProgress(0), 1000);
       setQueryResults(data);
       queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
       toast({
@@ -268,6 +291,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       });
     },
     onError: (error: Error) => {
+      setProgress(0);
       toast({
         title: "Query execution failed",
         description: error.message,
@@ -561,6 +585,21 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
           </div>
         </div>
       </div>
+
+      {/* Progress Bar */}
+      {isExecuting && (
+        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center space-x-3">
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Executing query...
+            </div>
+            <Progress value={progress} className="flex-1 h-2" />
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              {Math.round(progress)}%
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SQL Editor */}
       <div className="h-48 bg-white dark:bg-gray-900 p-4">
