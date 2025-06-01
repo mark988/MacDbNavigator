@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const connectionId = parseInt(req.params.id);
       const { tableName } = req.params;
-      const { changes, originalData, database } = req.body;
+      const { changes, originalData, database, schema, fullQuery } = req.body;
 
       const connection = await storage.getConnection(connectionId);
       if (!connection) {
@@ -422,7 +422,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             whereValues = columns.map(col => originalRow[col]);
           }
           
-          const updateQuery = `UPDATE "${tableName}" SET "${column}" = $1 WHERE ${whereClause}`;
+          // Construct the full table name with schema if provided
+          let fullTableName = tableName;
+          if (schema) {
+            fullTableName = `"${schema}"."${tableName}"`;
+          } else {
+            fullTableName = `"${tableName}"`;
+          }
+          
+          const updateQuery = `UPDATE ${fullTableName} SET "${column}" = $1 WHERE ${whereClause}`;
+          console.log('PostgreSQL Update Query:', updateQuery, 'Values:', [newValue, ...whereValues]);
           await client.query(updateQuery, [newValue, ...whereValues]);
         }
         

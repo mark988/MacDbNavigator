@@ -76,17 +76,37 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
       const changes = Array.from(pendingChanges.values());
       
-      // Extract database name from the query if available
-      const queryMatch = lastQuery?.query.match(/from\s+(\w+)\.(\w+)/i);
-      const databaseName = queryMatch ? queryMatch[1] : null;
+      // Extract schema and table name from the query
+      let actualTableName = tableName;
+      let schemaName = null;
+      let databaseName = null;
       
-      const response = await fetch(`/api/connections/${queryConnectionId}/table/${tableName}/update`, {
+      if (lastQuery?.query) {
+        // Check for schema.table pattern (PostgreSQL)
+        const schemaMatch = lastQuery.query.match(/from\s+(\w+)\.(\w+)/i);
+        if (schemaMatch) {
+          schemaName = schemaMatch[1];
+          actualTableName = schemaMatch[2];
+        }
+        
+        // Check for database.schema.table pattern
+        const dbMatch = lastQuery.query.match(/from\s+(\w+)\.(\w+)\.(\w+)/i);
+        if (dbMatch) {
+          databaseName = dbMatch[1];
+          schemaName = dbMatch[2];
+          actualTableName = dbMatch[3];
+        }
+      }
+      
+      const response = await fetch(`/api/connections/${queryConnectionId}/table/${actualTableName}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           changes,
           originalData: currentRows,
-          database: databaseName
+          database: databaseName,
+          schema: schemaName,
+          fullQuery: lastQuery?.query
         })
       });
 
