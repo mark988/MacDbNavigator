@@ -69,6 +69,58 @@ function createHighlightedContent(tokens: Array<{text: string, type: string}>) {
   }).join('');
 }
 
+// SQL Formatter function
+function formatSQL(sql: string): string {
+  if (!sql.trim()) return sql;
+  
+  // Remove extra whitespace and normalize
+  let formatted = sql.replace(/\s+/g, ' ').trim();
+  
+  // Add line breaks after major keywords
+  const majorKeywords = [
+    'SELECT', 'FROM', 'WHERE', 'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 
+    'ORDER BY', 'GROUP BY', 'HAVING', 'UNION', 'INSERT INTO', 'UPDATE', 'DELETE FROM',
+    'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE'
+  ];
+  
+  majorKeywords.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+    formatted = formatted.replace(regex, `\n${keyword.toUpperCase()}`);
+  });
+  
+  // Add indentation for certain clauses
+  const indentKeywords = ['AND', 'OR', 'ON'];
+  indentKeywords.forEach(keyword => {
+    const regex = new RegExp(`\\n(\\s*)\\b${keyword}\\b`, 'gi');
+    formatted = formatted.replace(regex, `\n    ${keyword.toUpperCase()}`);
+  });
+  
+  // Format SELECT columns (add line breaks after commas in SELECT)
+  formatted = formatted.replace(/SELECT\s+/gi, 'SELECT\n    ');
+  formatted = formatted.replace(/,\s*(?![^()]*\))/g, ',\n    ');
+  
+  // Clean up extra line breaks and spaces
+  formatted = formatted.replace(/\n\s*\n/g, '\n');
+  formatted = formatted.replace(/^\n+/, '');
+  formatted = formatted.replace(/\n+$/, '');
+  
+  // Normalize indentation
+  const lines = formatted.split('\n');
+  const cleanedLines = lines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.match(/^(AND|OR|ON)\b/i)) {
+      return '    ' + trimmed;
+    } else if (trimmed.match(/^(SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|ORDER BY|GROUP BY|HAVING|UNION)/i)) {
+      return trimmed;
+    } else if (trimmed.length > 0 && !trimmed.match(/^(SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|ORDER BY|GROUP BY|HAVING|UNION|AND|OR|ON)/i)) {
+      return '    ' + trimmed;
+    }
+    return trimmed;
+  });
+  
+  return cleanedLines.join('\n');
+}
+
 // SQL syntax validation function
 function validateSQL(sql: string): string[] {
   const errors: string[] = [];
@@ -288,6 +340,14 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
   const formatQuery = () => {
     if (monacoEditorRef.current) {
       monacoEditorRef.current.getAction('editor.action.formatDocument').run();
+    } else {
+      // Format SQL for our custom editor
+      const formattedSQL = formatSQL(content);
+      updateTabContent(tabId, formattedSQL);
+      toast({
+        title: "SQL Formatted",
+        description: "Your SQL has been formatted successfully",
+      });
     }
   };
 
