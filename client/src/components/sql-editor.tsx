@@ -368,57 +368,69 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       <div className="flex-1 bg-white dark:bg-gray-900 p-4">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
-            // SQL Editor with direct highlighting
-            <div className="w-full h-full relative overflow-hidden">
-              {/* Highlighted text layer (background) */}
-              <div 
-                className="absolute inset-0 p-4 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
-                style={{ 
-                  fontSize: '14px', 
-                  lineHeight: '1.5',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word'
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: createHighlightedContent(analyzeSQL(content || ''))
-                }}
-              />
+            // SQL Editor with direct highlighting and line numbers
+            <div className="w-full h-full flex overflow-hidden">
+              {/* Line numbers */}
+              <div className="bg-gray-100 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 px-2 py-4 font-mono text-sm text-gray-500 dark:text-gray-400 select-none min-w-[3rem] text-right">
+                {(content || '').split('\n').map((_, index) => (
+                  <div key={index} style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                    {index + 1}
+                  </div>
+                ))}
+              </div>
               
-              {/* Transparent textarea (foreground) */}
-              <textarea
-                value={content}
-                onChange={(e) => {
-                  const newContent = e.target.value;
-                  updateTabContent(tabId, newContent);
-                  // Validate SQL syntax
-                  const errors = validateSQL(newContent);
-                  setSyntaxErrors(errors);
-                }}
-                className="w-full h-full p-4 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
-                placeholder="Enter your SQL query here..."
-                style={{ 
-                  fontSize: '14px', 
-                  lineHeight: '1.5',
-                  color: 'transparent',
-                  caretColor: '#374151',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word'
-                }}
-                spellCheck={false}
-              />
-              
-              {/* Cursor visibility helper */}
-              <div 
-                className="absolute inset-0 p-4 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden opacity-0"
-                style={{ 
-                  fontSize: '14px', 
-                  lineHeight: '1.5',
-                  color: '#374151',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word'
-                }}
-              >
-                {content}
+              {/* Editor area */}
+              <div className="flex-1 relative overflow-hidden">
+                {/* Highlighted text layer (background) */}
+                <div 
+                  className="absolute inset-0 p-4 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
+                  style={{ 
+                    fontSize: '14px', 
+                    lineHeight: '1.5',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word'
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: createHighlightedContent(analyzeSQL(content || ''))
+                  }}
+                />
+                
+                {/* Transparent textarea (foreground) */}
+                <textarea
+                  value={content}
+                  onChange={(e) => {
+                    const newContent = e.target.value;
+                    updateTabContent(tabId, newContent);
+                    // Validate SQL syntax
+                    const errors = validateSQL(newContent);
+                    setSyntaxErrors(errors);
+                  }}
+                  className="w-full h-full p-4 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
+                  placeholder="Enter your SQL query here..."
+                  style={{ 
+                    fontSize: '14px', 
+                    lineHeight: '1.5',
+                    color: 'transparent',
+                    caretColor: '#374151',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word'
+                  }}
+                  spellCheck={false}
+                />
+                
+                {/* Cursor visibility helper */}
+                <div 
+                  className="absolute inset-0 p-4 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden opacity-0"
+                  style={{ 
+                    fontSize: '14px', 
+                    lineHeight: '1.5',
+                    color: '#374151',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word'
+                  }}
+                >
+                  {content}
+                </div>
               </div>
             </div>
           ) : (
