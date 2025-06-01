@@ -414,14 +414,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // First, let's check what tables exist in the current database
         try {
-          const tableCheckQuery = `
+          const allTablesQuery = `
             SELECT schemaname, tablename 
             FROM pg_tables 
-            WHERE tablename LIKE '%order%' OR tablename LIKE '%t_order%'
+            WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
             ORDER BY schemaname, tablename
           `;
-          const tableResult = await client.query(tableCheckQuery);
-          console.log('Available tables matching pattern:', tableResult.rows);
+          const allTablesResult = await client.query(allTablesQuery);
+          console.log('All available tables:', allTablesResult.rows);
+          
+          // Also check the current database and schema
+          const currentInfoQuery = `SELECT current_database(), current_schema()`;
+          const currentInfo = await client.query(currentInfoQuery);
+          console.log('Current database and schema:', currentInfo.rows[0]);
         } catch (err) {
           console.log('Error checking tables:', err);
         }
