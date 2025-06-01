@@ -121,17 +121,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: connection.database || undefined,
           });
 
           const [databases] = await mysqlConnection.execute('SHOW DATABASES');
           databaseInfo.databases = (databases as any[]).map(row => row.Database);
 
-          const [tables] = await mysqlConnection.execute('SHOW TABLES');
-          databaseInfo.tables = (tables as any[]).map(row => ({
-            name: row[`Tables_in_${connection.database}`],
-            type: 'table' as const
-          }));
+          if (connection.database) {
+            const [tables] = await mysqlConnection.execute('SHOW TABLES');
+            databaseInfo.tables = (tables as any[]).map(row => ({
+              name: row[`Tables_in_${connection.database}`],
+              type: 'table' as const
+            }));
+          }
 
           await mysqlConnection.end();
         } else if (connection.type === 'postgresql') {
