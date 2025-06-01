@@ -27,7 +27,32 @@
       "createdAt": "2025-06-01T11:01:15.949Z"
     }
   ],
-  "queryHistories": [],
+  "queryHistories": [
+    {
+      "id": 1,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 1307,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:17:09.286Z"
+    },
+    {
+      "id": 2,
+      "connectionId": 2,
+      "query": "SELECT 1 as test",
+      "executionTime": 643,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:18:06.904Z"
+    },
+    {
+      "id": 3,
+      "connectionId": 2,
+      "query": "SELECT 1 as test",
+      "executionTime": 664,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:18:35.539Z"
+    }
+  ],
   "nextConnectionId": 3,
-  "nextHistoryId": 1
+  "nextHistoryId": 4
 }

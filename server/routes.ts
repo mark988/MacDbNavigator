@@ -381,9 +381,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: connection.database || 'postgres',
             ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
+          
+          // Override any environment variables that might interfere
+          client.host = connection.host;
+          client.port = connection.port;
+          client.user = connection.username;
+          client.password = connection.password;
+          client.database = connection.database || 'postgres';
+          
           await client.connect();
 
           const queryResult = await client.query(query);
