@@ -17,7 +17,7 @@ interface SingleQueryResultProps {
 }
 
 function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
-  const { currentPage, activeConnectionId, queryHistory } = useDatabaseStore();
+  const { currentPage, activeConnectionId, queryHistory, tabs, activeTabId } = useDatabaseStore();
   const [viewMode, setViewMode] = useState<'table' | 'json'>('table');
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; column: string } | null>(null);
   const [editingValue, setEditingValue] = useState<string>('');
@@ -76,36 +76,24 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
       const changes = Array.from(pendingChanges.values());
       
-      // Extract schema and table name from the query
-      let actualTableName = tableName;
-      let schemaName = null;
-      let databaseName = null;
+      // Get the current active tab to extract database information
+      const activeTab = tabs.find(tab => tab.id === activeTabId);
+      const targetDatabase = activeTab?.databaseName;
       
-      if (lastQuery?.query) {
-        // Check for schema.table pattern (PostgreSQL)
-        const schemaMatch = lastQuery.query.match(/from\s+(\w+)\.(\w+)/i);
-        if (schemaMatch) {
-          schemaName = schemaMatch[1];
-          actualTableName = schemaMatch[2];
-        }
-        
-        // Check for database.schema.table pattern
-        const dbMatch = lastQuery.query.match(/from\s+(\w+)\.(\w+)\.(\w+)/i);
-        if (dbMatch) {
-          databaseName = dbMatch[1];
-          schemaName = dbMatch[2];
-          actualTableName = dbMatch[3];
-        }
-      }
+      console.log('Save operation database info:', {
+        tableName,
+        targetDatabase,
+        activeTab: activeTab?.title,
+        queryConnectionId
+      });
       
-      const response = await fetch(`/api/connections/${queryConnectionId}/table/${actualTableName}/update`, {
+      const response = await fetch(`/api/connections/${queryConnectionId}/table/${tableName}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           changes,
           originalData: currentRows,
-          database: databaseName,
-          schema: schemaName,
+          database: targetDatabase,
           fullQuery: lastQuery?.query
         })
       });

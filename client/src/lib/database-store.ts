@@ -10,8 +10,10 @@ interface DatabaseState {
   // Connections
   connections: Connection[];
   activeConnectionId: number | null;
+  currentDatabase: string | null;
   setConnections: (connections: Connection[]) => void;
   setActiveConnection: (id: number | null) => void;
+  setCurrentDatabase: (database: string | null) => void;
 
   // Tabs
   tabs: Array<{
@@ -66,8 +68,10 @@ export const useDatabaseStore = create<DatabaseState>()(
       // Connections
       connections: [],
       activeConnectionId: null,
+      currentDatabase: null,
       setConnections: (connections) => set({ connections }),
       setActiveConnection: (id) => set({ activeConnectionId: id }),
+      setCurrentDatabase: (database) => set({ currentDatabase: database }),
 
       // Tabs
       tabs: [],

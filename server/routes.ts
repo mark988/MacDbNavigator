@@ -393,7 +393,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await mysqlConnection.end();
       } else if (connection.type === 'postgresql') {
         // Use the same database connection approach as the query endpoint
-        const targetDatabase = database || connection.database || 'postgres';
+        // If database is provided in request, use it; otherwise fall back to connection default
+        const targetDatabase = database || connection.database || 'xiaoying';
         const client = new Client({
           host: connection.host,
           port: connection.port,
