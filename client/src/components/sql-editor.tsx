@@ -4,6 +4,7 @@ import { Play, Square, Save, FileText, AlertTriangle } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import type { QueryResult } from '@shared/schema';
 
 // Monaco Editor will be loaded dynamically
@@ -411,16 +412,14 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
           description: statement.substring(0, 50) + (statement.length > 50 ? '...' : ''),
         });
 
-        const response = await apiRequest(`/api/connections/${connectionId}/query`, {
-          method: 'POST',
-          body: JSON.stringify({
+        const response = await apiRequest(
+          'POST',
+          `/api/connections/${connectionId}/query`,
+          {
             query: statement,
             database: databaseName
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.text();
