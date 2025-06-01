@@ -86,25 +86,28 @@ export default function DatabaseManager() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex flex-col overflow-hidden">
-          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex flex-col">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex flex-col flex-1">
             {/* Tab Content */}
-            <div className="flex flex-col overflow-hidden">
+            <div className="flex flex-col flex-1 overflow-hidden">
               {tabs.map((tab) => (
                 <TabsContent
                   key={tab.id}
                   value={tab.id}
-                  className="flex flex-col overflow-hidden m-0 p-0"
+                  className="flex flex-col flex-1 overflow-hidden m-0 p-0"
                 >
                   {tab.type === 'query' ? (
-                    <div className="flex flex-col overflow-hidden">
+                    <div className="flex flex-col flex-1 overflow-hidden">
                       <SQLEditor
                         tabId={tab.id}
                         content={tab.content}
                         connectionId={tab.connectionId}
                         databaseName={tab.databaseName}
                       />
-                      <QueryResults />
+                      <div className="flex flex-col flex-1 overflow-hidden">
+                        <QueryResults />
+                        <QueryPagination />
+                      </div>
                     </div>
                   ) : (
                     <div className="h-32 flex items-center justify-center">
@@ -119,9 +122,6 @@ export default function DatabaseManager() {
             </div>
           </Tabs>
         </div>
-
-        {/* Fixed Bottom Pagination Bar */}
-        <QueryPagination />
       </div>
 
       <ConnectionModal />
