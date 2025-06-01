@@ -509,9 +509,16 @@ function OtherDatabaseItem({
               Loading tables...
             </div>
           ) : (
-            <div className="text-xs text-gray-500 p-1">
-              Switch to this database to view its tables
-            </div>
+            tablesData?.tables?.map((table) => (
+              <TableItem
+                key={table.name}
+                tableName={table.name}
+                connectionId={connectionId}
+                isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
+                onTableClick={onTableClick}
+                onTableDoubleClick={onTableDoubleClick}
+              />
+            ))
           )}
         </CollapsibleContent>
       </Collapsible>
