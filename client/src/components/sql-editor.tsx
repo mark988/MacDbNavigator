@@ -385,7 +385,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
             <Button
               variant="ghost"
               onClick={formatQuery}
-              disabled={!isEditorReady}
+              disabled={!content?.trim()}
               className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
             >
               <FileText className="w-4 h-4 mr-2" />
