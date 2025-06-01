@@ -379,8 +379,24 @@
       "executionTime": 879,
       "rowCount": null,
       "createdAt": "2025-06-01T12:10:04.621Z"
+    },
+    {
+      "id": 45,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_order",
+      "executionTime": 900,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T12:11:31.281Z"
+    },
+    {
+      "id": 46,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_product",
+      "executionTime": 899,
+      "rowCount": null,
+      "createdAt": "2025-06-01T12:11:32.626Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 45
+  "nextHistoryId": 47
 }
