@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: connection.database || 'postgres',
             ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
@@ -150,15 +150,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const dbResult = await client.query('SELECT datname FROM pg_database WHERE datistemplate = false');
           databaseInfo.databases = dbResult.rows.map(row => row.datname);
 
-          const tableResult = await client.query(`
-            SELECT table_name, table_type 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public'
-          `);
-          databaseInfo.tables = tableResult.rows.map(row => ({
-            name: row.table_name,
-            type: row.table_type === 'VIEW' ? 'view' as const : 'table' as const
-          }));
+          if (connection.database) {
+            const tableResult = await client.query(`
+              SELECT table_name, table_type 
+              FROM information_schema.tables 
+              WHERE table_schema = 'public'
+            `);
+            databaseInfo.tables = tableResult.rows.map(row => ({
+              name: row.table_name,
+              type: row.table_type === 'VIEW' ? 'view' as const : 'table' as const
+            }));
+          }
 
           await client.end();
         }
