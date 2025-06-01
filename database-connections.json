@@ -51,8 +51,24 @@
       "executionTime": 664,
       "rowCount": null,
       "createdAt": "2025-06-01T11:18:35.539Z"
+    },
+    {
+      "id": 4,
+      "connectionId": 2,
+      "query": "SELECT 1 as test",
+      "executionTime": 1596,
+      "rowCount": 1,
+      "createdAt": "2025-06-01T11:19:24.372Z"
+    },
+    {
+      "id": 5,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 887,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:19:42.991Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 4
+  "nextHistoryId": 6
 }
