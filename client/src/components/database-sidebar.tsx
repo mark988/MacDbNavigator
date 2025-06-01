@@ -216,7 +216,7 @@ export function DatabaseSidebar() {
                 expandedTables={expandedTables}
                 onToggle={() => handleConnectionToggle(connection.id)}
                 onDatabaseClick={handleDatabaseClick}
-                onDatabaseRightClick={handleNewQuery}
+                onDatabaseRightClick={handleDatabaseRightClick}
                 onTableClick={handleTableClick}
                 onTableDoubleClick={handleTableDoubleClick}
                 getConnectionStatus={getConnectionStatus}
@@ -343,7 +343,7 @@ function ConnectionItem({
                   isExpanded={expandedDatabases.has(`${connection.id}-${connection.database}`)}
                   expandedTables={expandedTables}
                   onDatabaseClick={onDatabaseClick}
-                  onDatabaseRightClick={handleNewQuery}
+                  onDatabaseRightClick={onDatabaseRightClick}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
                   isCurrent={true}
@@ -359,7 +359,7 @@ function ConnectionItem({
                   isExpanded={expandedDatabases.has(`${connection.id}-${dbName}`)}
                   expandedTables={expandedTables}
                   onDatabaseClick={onDatabaseClick}
-                  onDatabaseRightClick={handleNewQuery}
+                  onDatabaseRightClick={onDatabaseRightClick}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
                 />
