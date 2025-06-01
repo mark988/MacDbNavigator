@@ -15,6 +15,8 @@ import {
   Columns
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
+import { DatabaseContextMenu } from './context-menu';
+import { useToast } from '@/hooks/use-toast';
 import type { Connection, DatabaseInfo, QueryHistory, TableStructure } from '@shared/schema';
 
 export function DatabaseSidebar() {
@@ -31,6 +33,7 @@ export function DatabaseSidebar() {
     setQueryHistory
   } = useDatabaseStore();
 
+  const { toast } = useToast();
   const [expandedConnections, setExpandedConnections] = useState<Set<number>>(new Set());
   const [expandedDatabases, setExpandedDatabases] = useState<Set<string>>(new Set());
   const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set());
