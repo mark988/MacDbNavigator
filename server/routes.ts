@@ -40,6 +40,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update connection
+  app.put("/api/connections/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertConnectionSchema.parse(req.body);
+      const connection = await storage.updateConnection(id, validatedData);
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+      res.json(connection);
+    } catch (error: any) {
+      console.error('Error updating connection:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.delete("/api/connections/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
