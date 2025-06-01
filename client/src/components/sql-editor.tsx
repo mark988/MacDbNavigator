@@ -285,18 +285,11 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       setTimeout(() => setProgress(0), 1000);
       setQueryResults(data);
       queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
-      toast({
-        title: "Query executed successfully",
-        description: `${data.rowCount} rows returned in ${data.executionTime}ms`,
-      });
     },
     onError: (error: Error) => {
       setProgress(0);
-      toast({
-        title: "Query execution failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Error will be shown in the results area instead of toast
+      console.error('Query execution failed:', error.message);
     },
     onSettled: () => {
       setIsExecuting(false);
@@ -480,20 +473,11 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
         multiStatementResults: results // Add this custom property
       });
 
-      toast({
-        title: "All statements executed successfully",
-        description: `${statements.length} statements completed successfully`,
-      });
-
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
 
     } catch (error: any) {
-      toast({
-        title: "Multi-statement execution failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Multi-statement execution failed:', error.message);
     } finally {
       setIsExecuting(false);
     }

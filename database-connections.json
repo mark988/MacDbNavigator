@@ -643,8 +643,88 @@
       "executionTime": 888,
       "rowCount": 51,
       "createdAt": "2025-06-01T13:16:47.936Z"
+    },
+    {
+      "id": 78,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 883,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:00.113Z"
+    },
+    {
+      "id": 79,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 889,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:09.011Z"
+    },
+    {
+      "id": 80,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 896,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:12.416Z"
+    },
+    {
+      "id": 81,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 898,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:14.958Z"
+    },
+    {
+      "id": 82,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 883,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:17.668Z"
+    },
+    {
+      "id": 83,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 901,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:19.920Z"
+    },
+    {
+      "id": 84,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 1161,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:25:25.996Z"
+    },
+    {
+      "id": 85,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 917,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:26:26.858Z"
+    },
+    {
+      "id": 86,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 936,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:26:31.820Z"
+    },
+    {
+      "id": 87,
+      "connectionId": 2,
+      "query": "select * from t_order \n\n\n\n\n\n\n\n\n",
+      "executionTime": 881,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:26:35.289Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 78
+  "nextHistoryId": 88
 }
