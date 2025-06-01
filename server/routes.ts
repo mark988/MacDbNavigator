@@ -86,6 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             password: connection.password,
             database: connection.database,
             connectionTimeoutMillis: 5000,
+            ssl: connection.host.includes('.') && !connection.host.includes('localhost') ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
           await client.query('SELECT 1');
@@ -140,6 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user: connection.username,
             password: connection.password,
             database: connection.database,
+            ssl: connection.host.includes('.') && !connection.host.includes('localhost') ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
 
@@ -213,6 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user: connection.username,
             password: connection.password,
             database: connection.database,
+            ssl: connection.host.includes('.') && !connection.host.includes('localhost') ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
 
