@@ -315,19 +315,21 @@ function ConnectionItem({
             </div>
           ) : (
             <>
-              {/* Current Database */}
-              <DatabaseItem
-                dbName={connection.database}
-                connectionId={connection.id}
-                tables={databaseInfo?.tables || []}
-                isExpanded={expandedDatabases.has(`${connection.id}-${connection.database}`)}
-                expandedTables={expandedTables}
-                onDatabaseClick={onDatabaseClick}
-                onDatabaseRightClick={onDatabaseRightClick}
-                onTableClick={onTableClick}
-                onTableDoubleClick={onTableDoubleClick}
-                isCurrent={true}
-              />
+              {/* Current Database - only show if database name exists */}
+              {connection.database && (
+                <DatabaseItem
+                  dbName={connection.database}
+                  connectionId={connection.id}
+                  tables={databaseInfo?.tables || []}
+                  isExpanded={expandedDatabases.has(`${connection.id}-${connection.database}`)}
+                  expandedTables={expandedTables}
+                  onDatabaseClick={onDatabaseClick}
+                  onDatabaseRightClick={onDatabaseRightClick}
+                  onTableClick={onTableClick}
+                  onTableDoubleClick={onTableDoubleClick}
+                  isCurrent={true}
+                />
+              )}
               
               {/* Other Databases */}
               {databaseInfo?.databases.filter(db => db !== connection.database).map((dbName) => (
