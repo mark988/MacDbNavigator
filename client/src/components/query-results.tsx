@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 
 const ROWS_PER_PAGE = 50;
@@ -14,7 +14,7 @@ interface SingleQueryResultProps {
 }
 
 function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+  const { currentPage } = useDatabaseStore();
   const [viewMode, setViewMode] = useState<'table' | 'json'>('table');
 
   const totalPages = Math.ceil(queryResult.rows.length / ROWS_PER_PAGE);
@@ -212,7 +212,7 @@ export function QueryResults() {
 
 // Pagination component that will be placed at the bottom of the page
 export function QueryPagination() {
-  const { queryResults } = useDatabaseStore();
+  const { queryResults, currentPage, setCurrentPage } = useDatabaseStore();
   
   if (!queryResults) {
     return null;
@@ -231,9 +231,20 @@ export function QueryPagination() {
   }
 
   const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE);
-  const currentPage = 1; // This would need to be managed globally
   const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
   const endIndex = Math.min(startIndex + ROWS_PER_PAGE, totalRows);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
     <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
@@ -241,11 +252,37 @@ export function QueryPagination() {
         <div className="text-xs text-gray-600 dark:text-gray-400">
           Showing {startIndex + 1} to {endIndex} of {totalRows} results
         </div>
-        {totalPages > 1 && (
-          <div className="text-xs text-gray-600 dark:text-gray-400">
-            Page {currentPage} of {totalPages}
-          </div>
-        )}
+        
+        <div className="flex items-center space-x-4">
+          {totalPages > 1 && (
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Page {currentPage} of {totalPages}
+            </div>
+          )}
+          
+          {totalPages > 1 && (
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePrevPage}
+                disabled={currentPage <= 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

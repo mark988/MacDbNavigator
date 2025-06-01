@@ -35,6 +35,10 @@ interface DatabaseState {
   setQueryResults: (results: QueryResult | null) => void;
   setIsExecuting: (executing: boolean) => void;
 
+  // Pagination
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+
   // Query history
   queryHistory: QueryHistory[];
   setQueryHistory: (history: QueryHistory[]) => void;
@@ -104,8 +108,12 @@ export const useDatabaseStore = create<DatabaseState>()(
       // Query results
       queryResults: null,
       isExecuting: false,
-      setQueryResults: (results) => set({ queryResults: results }),
+      setQueryResults: (results) => set({ queryResults: results, currentPage: 1 }),
       setIsExecuting: (executing) => set({ isExecuting: executing }),
+
+      // Pagination
+      currentPage: 1,
+      setCurrentPage: (page) => set({ currentPage: page }),
 
       // Query history
       queryHistory: [],
