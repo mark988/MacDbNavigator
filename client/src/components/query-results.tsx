@@ -106,12 +106,12 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
         <div className="flex-1 min-h-0 overflow-auto border-x border-gray-200 dark:border-gray-700">
           {viewMode === 'table' ? (
             <Table>
-              <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+              <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-20 shadow-sm">
                 <TableRow>
                   {queryResult.columns.map((column: string) => (
                     <TableHead
                       key={column}
-                      className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 whitespace-nowrap min-w-32"
+                      className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 border-b-2 border-gray-300 dark:border-gray-600 whitespace-nowrap min-w-32 bg-gray-50 dark:bg-gray-800 sticky top-0"
                     >
                       {column}
                     </TableHead>
