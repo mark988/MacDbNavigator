@@ -963,8 +963,16 @@
       "executionTime": 1115,
       "rowCount": 51,
       "createdAt": "2025-06-01T15:03:35.038Z"
+    },
+    {
+      "id": 118,
+      "connectionId": 1,
+      "query": "select * from t_order",
+      "executionTime": 1563,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T15:07:07.672Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 118
+  "nextHistoryId": 119
 }

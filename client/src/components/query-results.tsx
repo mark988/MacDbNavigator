@@ -64,10 +64,11 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
       
       // Convert pendingChanges to the correct format expected by the backend
+      const originalData = queryResult?.rows || [];
       const changes = Array.from(pendingChanges.entries()).map(([cellKey, newValue]) => {
         const [rowIndexStr, column] = cellKey.split('-');
         const rowIndex = parseInt(rowIndexStr);
-        const originalRow = currentRows[rowIndex];
+        const originalRow = originalData[rowIndex];
         return {
           rowIndex,
           column,
@@ -92,7 +93,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           changes,
-          originalData: queryResults?.rows || [],
+          originalData: originalData,
           database: targetDatabase,
           fullQuery: lastQuery?.query
         })
