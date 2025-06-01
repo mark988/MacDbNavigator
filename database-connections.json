@@ -571,8 +571,24 @@
       "executionTime": 878,
       "rowCount": 51,
       "createdAt": "2025-06-01T12:59:08.076Z"
+    },
+    {
+      "id": 69,
+      "connectionId": 2,
+      "query": "select * from t_order ",
+      "executionTime": 2285,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:05:30.306Z"
+    },
+    {
+      "id": 70,
+      "connectionId": 2,
+      "query": "select * from t_order ",
+      "executionTime": 887,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T13:08:14.495Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 69
+  "nextHistoryId": 71
 }

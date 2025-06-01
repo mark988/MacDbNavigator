@@ -86,18 +86,18 @@ export default function DatabaseManager() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <div className="flex flex-col overflow-hidden">
+          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex flex-col">
             {/* Tab Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex flex-col overflow-hidden">
               {tabs.map((tab) => (
                 <TabsContent
                   key={tab.id}
                   value={tab.id}
-                  className="flex-1 flex flex-col overflow-hidden m-0 p-0"
+                  className="flex flex-col overflow-hidden m-0 p-0"
                 >
                   {tab.type === 'query' ? (
-                    <div className="flex-1 flex flex-col overflow-hidden">
+                    <div className="flex flex-col overflow-hidden">
                       <SQLEditor
                         tabId={tab.id}
                         content={tab.content}
@@ -107,7 +107,7 @@ export default function DatabaseManager() {
                       <QueryResults />
                     </div>
                   ) : (
-                    <div className="flex-1 flex items-center justify-center">
+                    <div className="h-32 flex items-center justify-center">
                       <div className="text-center text-gray-500 dark:text-gray-400">
                         <p>Table view for {tab.tableName}</p>
                         <p className="text-sm mt-1">Table browsing functionality coming soon</p>
