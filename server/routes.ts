@@ -141,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user: connection.username,
             password: connection.password,
             database: connection.database,
-            ssl: connection.host.includes('.') && !connection.host.includes('localhost') ? { rejectUnauthorized: false } : false,
+            ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
 
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user: connection.username,
             password: connection.password,
             database: connection.database,
-            ssl: connection.host.includes('.') && !connection.host.includes('localhost') ? { rejectUnauthorized: false } : false,
+            ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
 
