@@ -171,8 +171,24 @@
       "executionTime": 1909,
       "rowCount": 2,
       "createdAt": "2025-06-01T11:38:15.177Z"
+    },
+    {
+      "id": 19,
+      "connectionId": 2,
+      "query": "SELECT id FROM t_order\n\nselect * from t_product",
+      "executionTime": 884,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:43:12.487Z"
+    },
+    {
+      "id": 20,
+      "connectionId": 2,
+      "query": "SELECT id FROM t_order\n\nselect * from t_product",
+      "executionTime": 1581,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:44:21.386Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 19
+  "nextHistoryId": 21
 }

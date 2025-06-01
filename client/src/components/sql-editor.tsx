@@ -168,8 +168,10 @@ interface SQLEditorProps {
 export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const monacoEditorRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [syntaxErrors, setSyntaxErrors] = useState<string[]>([]);
+  const [selectedText, setSelectedText] = useState<string>('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -323,6 +325,13 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       } else {
         queryToExecute = monacoEditorRef.current.getValue();
       }
+    } else {
+      // For custom editor, check if there's selected text
+      if (selectedText.trim()) {
+        queryToExecute = selectedText;
+      } else {
+        queryToExecute = content;
+      }
     }
 
     if (!queryToExecute.trim()) {
@@ -377,7 +386,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
               ) : (
                 <Play className="w-4 h-4 mr-2" />
               )}
-              {isExecuting ? 'Stop' : 'Run Query'}
+              {isExecuting ? 'Stop' : selectedText.trim() ? 'Run Selection' : 'Run Query'}
             </Button>
             
             <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
@@ -457,6 +466,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
                 
                 {/* Transparent textarea (foreground) */}
                 <textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => {
                     const newContent = e.target.value;
@@ -464,6 +474,21 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
                     // Validate SQL syntax
                     const errors = validateSQL(newContent);
                     setSyntaxErrors(errors);
+                  }}
+                  onSelect={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    const selected = target.value.substring(target.selectionStart, target.selectionEnd);
+                    setSelectedText(selected);
+                  }}
+                  onMouseUp={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    const selected = target.value.substring(target.selectionStart, target.selectionEnd);
+                    setSelectedText(selected);
+                  }}
+                  onKeyUp={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    const selected = target.value.substring(target.selectionStart, target.selectionEnd);
+                    setSelectedText(selected);
                   }}
                   className="w-full h-full p-4 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
                   placeholder="Enter your SQL query here..."
