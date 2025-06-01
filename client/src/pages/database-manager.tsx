@@ -105,6 +105,7 @@ export default function DatabaseManager() {
                         databaseName={tab.databaseName}
                       />
                       <QueryResults />
+                      <QueryPagination />
                     </div>
                   ) : (
                     <div className="h-32 flex items-center justify-center">

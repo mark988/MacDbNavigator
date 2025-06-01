@@ -62,7 +62,19 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
     try {
       // Use the connection ID from the last query instead of activeConnectionId
       const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
-      const changes = Array.from(pendingChanges.values());
+      
+      // Convert pendingChanges to the correct format expected by the backend
+      const changes = Array.from(pendingChanges.entries()).map(([cellKey, newValue]) => {
+        const [rowIndexStr, column] = cellKey.split('-');
+        const rowIndex = parseInt(rowIndexStr);
+        const originalRow = currentRows[rowIndex];
+        return {
+          rowIndex,
+          column,
+          newValue,
+          oldValue: originalRow ? originalRow[column] : null
+        };
+      });
       
       // Get the current active tab to extract database information
       const activeTab = tabs.find(tab => tab.id === activeTabId);
@@ -80,7 +92,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           changes,
-          originalData: currentRows,
+          originalData: queryResults?.rows || [],
           database: targetDatabase,
           fullQuery: lastQuery?.query
         })
