@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 
-const ROWS_PER_PAGE = 100;
+const ROWS_PER_PAGE = 50;
 
 interface SingleQueryResultProps {
   queryResult: any;
@@ -103,51 +103,53 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           No data found
         </div>
       ) : (
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto max-h-96 border border-gray-200 dark:border-gray-700">
           {viewMode === 'table' ? (
-            <Table>
-              <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800">
-                <TableRow>
-                  {queryResult.columns.map((column: string) => (
-                    <TableHead
-                      key={column}
-                      className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700"
-                    >
-                      {column}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentRows.map((row: any, index: number) => (
-                  <TableRow
-                    key={startIndex + index}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700"
-                  >
+            <div className="overflow-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+                  <TableRow>
                     {queryResult.columns.map((column: string) => (
-                      <TableCell
+                      <TableHead
                         key={column}
-                        className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100"
+                        className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 whitespace-nowrap min-w-32"
                       >
-                        {row[column] === null || row[column] === undefined ? (
-                          <span className="text-gray-400 italic">NULL</span>
-                        ) : typeof row[column] === 'object' ? (
-                          <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
-                            {JSON.stringify(row[column])}
-                          </span>
-                        ) : String(row[column]).length > 100 ? (
-                          <span title={String(row[column])}>
-                            {String(row[column]).substring(0, 100)}...
-                          </span>
-                        ) : (
-                          String(row[column])
-                        )}
-                      </TableCell>
+                        {column}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {currentRows.map((row: any, index: number) => (
+                    <TableRow
+                      key={startIndex + index}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700"
+                    >
+                      {queryResult.columns.map((column: string) => (
+                        <TableCell
+                          key={column}
+                          className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
+                        >
+                          {row[column] === null || row[column] === undefined ? (
+                            <span className="text-gray-400 italic">NULL</span>
+                          ) : typeof row[column] === 'object' ? (
+                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
+                              {JSON.stringify(row[column])}
+                            </span>
+                          ) : String(row[column]).length > 100 ? (
+                            <span title={String(row[column])}>
+                              {String(row[column]).substring(0, 100)}...
+                            </span>
+                          ) : (
+                            String(row[column])
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
             <div className="p-4">
               <pre className="text-sm font-mono bg-gray-50 dark:bg-gray-800 p-4 rounded-lg overflow-auto">
