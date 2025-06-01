@@ -13,9 +13,10 @@ interface SQLEditorProps {
   tabId: string;
   content: string;
   connectionId?: number;
+  databaseName?: string;
 }
 
-export function SQLEditor({ tabId, content, connectionId }: SQLEditorProps) {
+export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const monacoEditorRef = useRef<any>(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -42,7 +43,7 @@ export function SQLEditor({ tabId, content, connectionId }: SQLEditorProps) {
       const response = await fetch(`/api/connections/${connId}/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, database: databaseName }),
       });
 
       if (!response.ok) {

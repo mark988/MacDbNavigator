@@ -21,9 +21,10 @@ interface DatabaseState {
     content: string;
     connectionId?: number;
     tableName?: string;
+    databaseName?: string;
   }>;
   activeTabId: string | null;
-  addTab: (tab: { title: string; type: 'query' | 'table'; connectionId?: number; tableName?: string }) => void;
+  addTab: (tab: { title: string; type: 'query' | 'table'; connectionId?: number; tableName?: string; databaseName?: string }) => void;
   removeTab: (id: string) => void;
   setActiveTab: (id: string) => void;
   updateTabContent: (id: string, content: string) => void;

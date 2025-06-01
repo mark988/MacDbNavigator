@@ -340,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/connections/:id/query", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { query } = req.body;
+      const { query, database } = req.body;
       
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ error: "Query is required" });
@@ -376,12 +376,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           await mysqlConnection.end();
         } else if (connection.type === 'postgresql') {
+          const targetDatabase = database || connection.database || 'postgres';
           const client = new Client({
             host: connection.host,
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database || 'postgres',
+            database: targetDatabase,
             ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
           
@@ -390,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           client.port = connection.port;
           client.user = connection.username;
           client.password = connection.password;
-          client.database = connection.database || 'postgres';
+          client.database = targetDatabase;
           
           await client.connect();
 

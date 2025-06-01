@@ -102,6 +102,7 @@ export function DatabaseSidebar() {
         title: `Query - ${dbName}`,
         type: 'query',
         connectionId,
+        databaseName: dbName,
       });
       toast({
         title: "新查询已创建",
