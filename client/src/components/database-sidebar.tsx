@@ -118,7 +118,6 @@ export function DatabaseSidebar() {
   };
 
   const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
-    // This is kept for backward compatibility
     handleNewQuery(dbName, connectionId);
   };
 
@@ -404,12 +403,8 @@ function DatabaseItem({
           <DatabaseContextMenu
             databaseName={dbName}
             connectionId={connectionId}
-            onNewQuery={(dbName, connectionId) => {
-              // We'll need to pass these handlers from the parent
-              onDatabaseRightClick(dbName, connectionId);
-            }}
+            onNewQuery={onDatabaseRightClick}
             onBackup={(dbName, connectionId) => {
-              // Backup functionality placeholder
               console.log(`Backup ${dbName} from connection ${connectionId}`);
             }}
           >
