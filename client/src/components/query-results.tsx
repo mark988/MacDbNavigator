@@ -75,12 +75,18 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       // Use the connection ID from the last query instead of activeConnectionId
       const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
       const changes = Array.from(pendingChanges.values());
+      
+      // Extract database name from the query if available
+      const queryMatch = lastQuery?.query.match(/from\s+(\w+)\.(\w+)/i);
+      const databaseName = queryMatch ? queryMatch[1] : null;
+      
       const response = await fetch(`/api/connections/${queryConnectionId}/table/${tableName}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           changes,
-          originalData: currentRows 
+          originalData: currentRows,
+          database: databaseName
         })
       });
 

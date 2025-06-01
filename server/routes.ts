@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const connectionId = parseInt(req.params.id);
       const { tableName } = req.params;
-      const { changes, originalData } = req.body;
+      const { changes, originalData, database } = req.body;
 
       const connection = await storage.getConnection(connectionId);
       if (!connection) {
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await mysqlConnection.end();
       } else if (connection.type === 'postgresql') {
         // Use the same database connection approach as the query endpoint
-        const targetDatabase = connection.database || 'postgres';
+        const targetDatabase = database || connection.database || 'postgres';
         const client = new Client({
           host: connection.host,
           port: connection.port,
@@ -393,6 +393,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           database: targetDatabase,
           ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
         });
+        
+        // Override any environment variables that might interfere
+        client.host = connection.host;
+        client.port = connection.port;
+        client.user = connection.username;
+        client.password = connection.password;
+        client.database = targetDatabase;
+        
         await client.connect();
         
         for (const change of changes) {
