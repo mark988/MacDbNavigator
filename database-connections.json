@@ -539,8 +539,40 @@
       "executionTime": 1532,
       "rowCount": 51,
       "createdAt": "2025-06-01T12:48:29.629Z"
+    },
+    {
+      "id": 65,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 880,
+      "rowCount": null,
+      "createdAt": "2025-06-01T12:57:12.900Z"
+    },
+    {
+      "id": 66,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 880,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T12:58:08.356Z"
+    },
+    {
+      "id": 67,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 895,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T12:58:40.849Z"
+    },
+    {
+      "id": 68,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 878,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T12:59:08.076Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 65
+  "nextHistoryId": 69
 }
