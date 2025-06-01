@@ -11,6 +11,7 @@ export const connections = pgTable("connections", {
   database: text("database").notNull(),
   username: text("username").notNull(),
   password: text("password").notNull(),
+  useSSL: boolean("use_ssl").default(false),
   isConnected: boolean("is_connected").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });

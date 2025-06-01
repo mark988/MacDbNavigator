@@ -67,8 +67,15 @@ export class MemStorage implements IStorage {
   async createConnection(insertConnection: InsertConnection): Promise<Connection> {
     const id = this.currentConnectionId++;
     const connection: Connection = {
-      ...insertConnection,
       id,
+      name: insertConnection.name,
+      type: insertConnection.type,
+      host: insertConnection.host,
+      port: insertConnection.port,
+      database: insertConnection.database,
+      username: insertConnection.username,
+      password: insertConnection.password,
+      useSSL: insertConnection.useSSL ?? false,
       isConnected: false,
       createdAt: new Date(),
     };

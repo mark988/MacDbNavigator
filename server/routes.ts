@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             password: connection.password,
             database: connection.database,
             connectionTimeoutMillis: 5000,
-            ssl: connection.host.includes('.') && !connection.host.includes('localhost') ? { rejectUnauthorized: false } : false,
+            ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
           await client.connect();
           await client.query('SELECT 1');

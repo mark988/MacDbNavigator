@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { insertConnectionSchema, type InsertConnection } from '@shared/schema';
 import { useDatabaseStore } from '@/lib/database-store';
@@ -33,6 +34,7 @@ export function ConnectionModal() {
       database: '',
       username: '',
       password: '',
+      useSSL: false,
     },
   });
 
@@ -282,6 +284,30 @@ export function ConnectionModal() {
                 )}
               />
             </div>
+
+            {/* SSL Option */}
+            <FormField
+              control={form.control}
+              name="useSSL"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value || false}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Use SSL Connection
+                    </FormLabel>
+                    <p className="text-xs text-muted-foreground">
+                      Enable SSL/TLS encryption for secure database connections
+                    </p>
+                  </div>
+                </FormItem>
+              )}
+            />
 
             {/* Test Connection Status */}
             {testStatus !== 'idle' && (
