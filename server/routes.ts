@@ -337,6 +337,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Table data update endpoint
+  app.post('/api/connections/:id/table/:tableName/update', async (req: Request, res: Response) => {
+    try {
+      const connectionId = parseInt(req.params.id);
+      const { tableName } = req.params;
+      const { changes } = req.body;
+
+      const connection = await storage.getConnection(connectionId);
+      if (!connection) {
+        return res.status(404).json({ error: 'Connection not found' });
+      }
+
+      if (connection.type === 'mysql') {
+        const mysqlConnection = createMySQLConnection(connection);
+        
+        for (const change of changes) {
+          const { rowIndex, column, newValue } = change;
+          
+          // Build UPDATE query - assuming we have an id column for identifying rows
+          const updateQuery = `UPDATE \`${tableName}\` SET \`${column}\` = ? WHERE id = ?`;
+          await mysqlConnection.execute(updateQuery, [newValue, rowIndex + 1]); // Assuming id starts from 1
+        }
+        
+        mysqlConnection.end();
+      } else if (connection.type === 'postgresql') {
+        const client = createPostgreSQLClient(connection);
+        await client.connect();
+        
+        for (const change of changes) {
+          const { rowIndex, column, newValue } = change;
+          
+          // Build UPDATE query - assuming we have an id column for identifying rows
+          const updateQuery = `UPDATE "${tableName}" SET "${column}" = $1 WHERE id = $2`;
+          await client.query(updateQuery, [newValue, rowIndex + 1]); // Assuming id starts from 1
+        }
+        
+        await client.end();
+      }
+
+      res.json({ success: true, updatedRows: changes.length });
+    } catch (error: any) {
+      console.error('Table update error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/connections/:id/query", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
