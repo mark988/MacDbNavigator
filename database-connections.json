@@ -139,8 +139,32 @@
       "executionTime": 875,
       "rowCount": 2,
       "createdAt": "2025-06-01T11:31:59.488Z"
+    },
+    {
+      "id": 15,
+      "connectionId": 2,
+      "query": "SELECT * FROM t_order order by id desc",
+      "executionTime": 902,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T11:35:06.417Z"
+    },
+    {
+      "id": 16,
+      "connectionId": 2,
+      "query": "SELECT * FROM t_order order by id desc group by id",
+      "executionTime": 903,
+      "rowCount": null,
+      "createdAt": "2025-06-01T11:35:23.382Z"
+    },
+    {
+      "id": 17,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 910,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T11:37:04.091Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 15
+  "nextHistoryId": 18
 }
