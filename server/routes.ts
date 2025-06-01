@@ -147,8 +147,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           await client.connect();
 
-          const dbResult = await client.query('SELECT datname FROM pg_database WHERE datistemplate = false');
-          databaseInfo.databases = dbResult.rows.map(row => row.datname);
+          const dbResult = await client.query('SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN (\'template0\', \'template1\')');
+          databaseInfo.databases = dbResult.rows
+            .map(row => row.datname)
+            .filter(name => name && name.trim() && !name.includes('curent'));
 
           if (connection.database) {
             const tableResult = await client.query(`
