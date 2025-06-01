@@ -240,7 +240,7 @@ export function QueryResults() {
   if (queryResults.multiStatementResults && queryResults.multiStatementResults.length > 0) {
     return (
       <div className="flex-1 flex flex-col">
-        <Tabs value="statement-0" className="flex-1 flex flex-col">
+        <Tabs defaultValue="statement-0" className="flex-1 flex flex-col">
           <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0">
             {queryResults.multiStatementResults.map((statementResult, index) => (
               <TabsTrigger

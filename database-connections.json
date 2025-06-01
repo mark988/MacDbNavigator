@@ -395,8 +395,56 @@
       "executionTime": 899,
       "rowCount": null,
       "createdAt": "2025-06-01T12:11:32.626Z"
+    },
+    {
+      "id": 47,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_order",
+      "executionTime": 899,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T12:14:41.287Z"
+    },
+    {
+      "id": 48,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_product",
+      "executionTime": 1903,
+      "rowCount": null,
+      "createdAt": "2025-06-01T12:14:43.923Z"
+    },
+    {
+      "id": 49,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_order",
+      "executionTime": 1529,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T12:15:02.882Z"
+    },
+    {
+      "id": 50,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_product",
+      "executionTime": 886,
+      "rowCount": null,
+      "createdAt": "2025-06-01T12:15:04.200Z"
+    },
+    {
+      "id": 51,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_order",
+      "executionTime": 905,
+      "rowCount": 2,
+      "createdAt": "2025-06-01T12:15:21.620Z"
+    },
+    {
+      "id": 52,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_product",
+      "executionTime": 881,
+      "rowCount": null,
+      "createdAt": "2025-06-01T12:15:22.947Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 47
+  "nextHistoryId": 53
 }
