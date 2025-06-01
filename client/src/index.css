@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light theme colors inspired by macOS */
+  --background: 0 0% 100%; /* Pure white */
+  --foreground: 210 11% 15%; /* Dark gray for text */
+  
+  --muted: 210 11% 98%; /* Very light gray */
+  --muted-foreground: 210 4% 44%; /* Medium gray */
+  
+  --popover: 0 0% 100%; /* White */
+  --popover-foreground: 210 11% 15%; /* Dark gray */
+  
+  --card: 0 0% 100%; /* White */
+  --card-foreground: 210 11% 15%; /* Dark gray */
+  
+  --border: 210 11% 90%; /* Light gray border */
+  --input: 210 11% 90%; /* Light gray input */
+  
+  --primary: 207 90% 54%; /* macOS blue */
+  --primary-foreground: 211 100% 99%; /* Near white */
+  
+  --secondary: 210 11% 98%; /* Very light gray */
+  --secondary-foreground: 210 11% 15%; /* Dark gray */
+  
+  --accent: 210 11% 96%; /* Light gray accent */
+  --accent-foreground: 210 11% 15%; /* Dark gray */
+  
+  --destructive: 0 84% 60%; /* Red */
+  --destructive-foreground: 0 0% 98%; /* Near white */
+  
+  --ring: 207 90% 54%; /* macOS blue for focus rings */
+  --radius: 0.5rem;
+
+  /* Sidebar colors */
+  --sidebar-background: 210 11% 96%; /* Light gray */
+  --sidebar-foreground: 210 11% 15%; /* Dark gray */
+  --sidebar-primary: 207 90% 54%; /* macOS blue */
+  --sidebar-primary-foreground: 211 100% 99%; /* Near white */
+  --sidebar-accent: 210 11% 90%; /* Slightly darker gray */
+  --sidebar-accent-foreground: 210 11% 15%; /* Dark gray */
+  --sidebar-border: 210 11% 85%; /* Medium gray border */
+  --sidebar-ring: 207 90% 54%; /* macOS blue */
+}
+
+.dark {
+  /* Dark theme colors inspired by macOS */
+  --background: 220 13% 9%; /* Very dark gray */
+  --foreground: 0 0% 98%; /* Near white */
+  
+  --muted: 220 13% 15%; /* Dark gray */
+  --muted-foreground: 220 9% 65%; /* Light gray */
+  
+  --popover: 220 13% 9%; /* Very dark gray */
+  --popover-foreground: 0 0% 98%; /* Near white */
+  
+  --card: 220 13% 9%; /* Very dark gray */
+  --card-foreground: 0 0% 98%; /* Near white */
+  
+  --border: 220 13% 25%; /* Medium dark gray */
+  --input: 220 13% 25%; /* Medium dark gray */
+  
+  --primary: 207 90% 54%; /* macOS blue (same as light) */
+  --primary-foreground: 211 100% 99%; /* Near white */
+  
+  --secondary: 220 13% 15%; /* Dark gray */
+  --secondary-foreground: 0 0% 98%; /* Near white */
+  
+  --accent: 220 13% 20%; /* Slightly lighter dark gray */
+  --accent-foreground: 0 0% 98%; /* Near white */
+  
+  --destructive: 0 62% 55%; /* Darker red */
+  --destructive-foreground: 0 0% 98%; /* Near white */
+  
+  --ring: 207 90% 54%; /* macOS blue for focus rings */
+
+  /* Sidebar colors for dark mode */
+  --sidebar-background: 220 13% 12%; /* Dark gray background */
+  --sidebar-foreground: 0 0% 98%; /* Near white */
+  --sidebar-primary: 207 90% 54%; /* macOS blue */
+  --sidebar-primary-foreground: 211 100% 99%; /* Near white */
+  --sidebar-accent: 220 13% 20%; /* Slightly lighter dark gray */
+  --sidebar-accent-foreground: 0 0% 98%; /* Near white */
+  --sidebar-border: 220 13% 25%; /* Medium dark gray border */
+  --sidebar-ring: 207 90% 54%; /* macOS blue */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  }
+
+  /* Monaco Editor specific styles */
+  .monaco-editor {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+  }
+
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded-md;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-500;
+  }
+
+  /* Ensure dark mode transitions are smooth */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+}
+
+/* Hide default table styling in results */
+table {
+  border-collapse: collapse;
+}
+
+/* Custom focus styles for better accessibility */
+.focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}

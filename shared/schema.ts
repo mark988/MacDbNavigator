@@ -1,0 +1,60 @@
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const connections = pgTable("connections", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'mysql' | 'postgresql'
+  host: text("host").notNull(),
+  port: integer("port").notNull(),
+  database: text("database").notNull(),
+  username: text("username").notNull(),
+  password: text("password").notNull(),
+  isConnected: boolean("is_connected").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const queryHistory = pgTable("query_history", {
+  id: serial("id").primaryKey(),
+  connectionId: integer("connection_id").references(() => connections.id),
+  query: text("query").notNull(),
+  executionTime: integer("execution_time"), // in milliseconds
+  rowCount: integer("row_count"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertConnectionSchema = createInsertSchema(connections).omit({
+  id: true,
+  isConnected: true,
+  createdAt: true,
+});
+
+export const insertQueryHistorySchema = createInsertSchema(queryHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertConnection = z.infer<typeof insertConnectionSchema>;
+export type Connection = typeof connections.$inferSelect;
+export type InsertQueryHistory = z.infer<typeof insertQueryHistorySchema>;
+export type QueryHistory = typeof queryHistory.$inferSelect;
+
+// Query result types
+export type QueryResult = {
+  columns: string[];
+  rows: Record<string, any>[];
+  rowCount: number;
+  executionTime: number;
+};
+
+export type DatabaseObject = {
+  name: string;
+  type: 'table' | 'view' | 'procedure' | 'function';
+  schema?: string;
+};
+
+export type DatabaseInfo = {
+  databases: string[];
+  tables: DatabaseObject[];
+};

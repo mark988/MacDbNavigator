@@ -1,0 +1,287 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertConnectionSchema, insertQueryHistorySchema, type QueryResult, type DatabaseInfo } from "@shared/schema";
+import mysql from 'mysql2/promise';
+import { Client } from 'pg';
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Connection management routes
+  app.get("/api/connections", async (req, res) => {
+    try {
+      const connections = await storage.getConnections();
+      res.json(connections);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch connections" });
+    }
+  });
+
+  app.post("/api/connections", async (req, res) => {
+    try {
+      const validatedData = insertConnectionSchema.parse(req.body);
+      const connection = await storage.createConnection(validatedData);
+      res.json(connection);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Failed to create connection" });
+    }
+  });
+
+  app.put("/api/connections/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertConnectionSchema.partial().parse(req.body);
+      const connection = await storage.updateConnection(id, validatedData);
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+      res.json(connection);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Failed to update connection" });
+    }
+  });
+
+  app.delete("/api/connections/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteConnection(id);
+      if (!success) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete connection" });
+    }
+  });
+
+  // Database operations
+  app.post("/api/connections/:id/test", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const connection = await storage.getConnection(id);
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+
+      let isConnected = false;
+      let error = null;
+
+      try {
+        if (connection.type === 'mysql') {
+          const mysqlConnection = await mysql.createConnection({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+            connectTimeout: 5000,
+          });
+          await mysqlConnection.ping();
+          await mysqlConnection.end();
+          isConnected = true;
+        } else if (connection.type === 'postgresql') {
+          const client = new Client({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+            connectionTimeoutMillis: 5000,
+          });
+          await client.connect();
+          await client.query('SELECT 1');
+          await client.end();
+          isConnected = true;
+        }
+      } catch (err: any) {
+        error = err.message;
+      }
+
+      await storage.updateConnectionStatus(id, isConnected);
+      res.json({ connected: isConnected, error });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to test connection" });
+    }
+  });
+
+  app.get("/api/connections/:id/databases", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const connection = await storage.getConnection(id);
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+
+      let databaseInfo: DatabaseInfo = { databases: [], tables: [] };
+
+      try {
+        if (connection.type === 'mysql') {
+          const mysqlConnection = await mysql.createConnection({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+          });
+
+          const [databases] = await mysqlConnection.execute('SHOW DATABASES');
+          databaseInfo.databases = (databases as any[]).map(row => row.Database);
+
+          const [tables] = await mysqlConnection.execute('SHOW TABLES');
+          databaseInfo.tables = (tables as any[]).map(row => ({
+            name: row[`Tables_in_${connection.database}`],
+            type: 'table' as const
+          }));
+
+          await mysqlConnection.end();
+        } else if (connection.type === 'postgresql') {
+          const client = new Client({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+          });
+          await client.connect();
+
+          const dbResult = await client.query('SELECT datname FROM pg_database WHERE datistemplate = false');
+          databaseInfo.databases = dbResult.rows.map(row => row.datname);
+
+          const tableResult = await client.query(`
+            SELECT table_name, table_type 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+          `);
+          databaseInfo.tables = tableResult.rows.map(row => ({
+            name: row.table_name,
+            type: row.table_type === 'VIEW' ? 'view' as const : 'table' as const
+          }));
+
+          await client.end();
+        }
+      } catch (err: any) {
+        return res.status(500).json({ error: `Database connection failed: ${err.message}` });
+      }
+
+      res.json(databaseInfo);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to fetch database info" });
+    }
+  });
+
+  app.post("/api/connections/:id/query", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { query } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ error: "Query is required" });
+      }
+
+      const connection = await storage.getConnection(id);
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+
+      const startTime = Date.now();
+      let result: QueryResult;
+
+      try {
+        if (connection.type === 'mysql') {
+          const mysqlConnection = await mysql.createConnection({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+          });
+
+          const [rows, fields] = await mysqlConnection.execute(query);
+          const executionTime = Date.now() - startTime;
+
+          result = {
+            columns: (fields as any[]).map(field => field.name),
+            rows: rows as Record<string, any>[],
+            rowCount: Array.isArray(rows) ? rows.length : 0,
+            executionTime,
+          };
+
+          await mysqlConnection.end();
+        } else if (connection.type === 'postgresql') {
+          const client = new Client({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+          });
+          await client.connect();
+
+          const queryResult = await client.query(query);
+          const executionTime = Date.now() - startTime;
+
+          result = {
+            columns: queryResult.fields.map(field => field.name),
+            rows: queryResult.rows,
+            rowCount: queryResult.rowCount || 0,
+            executionTime,
+          };
+
+          await client.end();
+        } else {
+          throw new Error("Unsupported database type");
+        }
+
+        // Save to query history
+        await storage.addQueryHistory({
+          connectionId: id,
+          query,
+          executionTime: result.executionTime,
+          rowCount: result.rowCount,
+        });
+
+        res.json(result);
+      } catch (err: any) {
+        const executionTime = Date.now() - startTime;
+        
+        // Save failed query to history
+        await storage.addQueryHistory({
+          connectionId: id,
+          query,
+          executionTime,
+          rowCount: 0,
+        });
+
+        res.status(500).json({ error: `Query execution failed: ${err.message}` });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to execute query" });
+    }
+  });
+
+  // Query history routes
+  app.get("/api/query-history", async (req, res) => {
+    try {
+      const connectionId = req.query.connectionId ? parseInt(req.query.connectionId as string) : undefined;
+      const history = await storage.getQueryHistory(connectionId);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch query history" });
+    }
+  });
+
+  app.delete("/api/query-history/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteQueryHistory(id);
+      if (!success) {
+        return res.status(404).json({ error: "Query history not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete query history" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
