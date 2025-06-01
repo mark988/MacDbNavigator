@@ -323,8 +323,16 @@
       "executionTime": 893,
       "rowCount": 2,
       "createdAt": "2025-06-01T12:04:16.110Z"
+    },
+    {
+      "id": 38,
+      "connectionId": 2,
+      "query": "SELECT  * FROM t_product",
+      "executionTime": 1976,
+      "rowCount": null,
+      "createdAt": "2025-06-01T12:04:19.443Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 38
+  "nextHistoryId": 39
 }
