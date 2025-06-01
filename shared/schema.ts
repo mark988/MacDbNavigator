@@ -8,7 +8,7 @@ export const connections = pgTable("connections", {
   type: text("type").notNull(), // 'mysql' | 'postgresql'
   host: text("host").notNull(),
   port: integer("port").notNull(),
-  database: text("database").notNull(),
+  database: text("database"),
   username: text("username").notNull(),
   password: text("password").notNull(),
   useSSL: boolean("use_ssl").default(false),

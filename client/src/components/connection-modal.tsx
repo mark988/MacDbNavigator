@@ -75,8 +75,8 @@ export function ConnectionModal() {
   const testConnection = async () => {
     const formData = form.getValues();
     
-    // Validate required fields
-    const requiredFields: (keyof ConnectionFormData)[] = ['name', 'host', 'database', 'username'];
+    // Validate required fields (database is now optional)
+    const requiredFields: (keyof ConnectionFormData)[] = ['name', 'host', 'username'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     
     if (missingFields.length > 0) {

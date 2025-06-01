@@ -72,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: connection.database || undefined,
             connectTimeout: 5000,
           });
           await mysqlConnection.ping();
@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: connection.database || 'postgres',
             connectionTimeoutMillis: 5000,
             ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
