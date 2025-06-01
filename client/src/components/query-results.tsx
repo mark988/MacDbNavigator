@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 
 const ROWS_PER_PAGE = 50;
@@ -49,7 +49,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   };
 
   return (
-    <div className="h-80 flex flex-col border-t border-gray-200 dark:border-gray-700">
+    <div className="flex-1 flex flex-col border-t border-gray-200 dark:border-gray-700">
       {/* Results Header */}
       <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -157,70 +157,6 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           )}
         </div>
       )}
-
-      {/* Pagination */}
-      {queryResult.rows.length > 0 && totalPages > 1 && (
-        <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-600 dark:text-gray-400">
-              Showing {startIndex + 1} to {endIndex} of {queryResult.rowCount} results
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 text-sm"
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </Button>
-              
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === currentPage ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setCurrentPage(pageNum)}
-                      className="w-8 h-8 p-0 text-sm"
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-                {totalPages > 5 && (
-                  <>
-                    <span className="text-gray-400">...</span>
-                    <Button
-                      variant={totalPages === currentPage ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="w-8 h-8 p-0 text-sm"
-                    >
-                      {totalPages}
-                    </Button>
-                  </>
-                )}
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-sm"
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -230,7 +166,7 @@ export function QueryResults() {
 
   if (!queryResults) {
     return (
-      <div className="h-80 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
         <p>Run a query to see results</p>
       </div>
     );
@@ -239,7 +175,7 @@ export function QueryResults() {
   // Handle multi-statement results
   if (queryResults.multiStatementResults && queryResults.multiStatementResults.length > 0) {
     return (
-      <div className="h-80 flex flex-col border-t border-gray-200 dark:border-gray-700">
+      <div className="flex-1 flex flex-col border-t border-gray-200 dark:border-gray-700">
         <Tabs defaultValue="statement-0" className="flex-1 flex flex-col">
           <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0 flex-shrink-0">
             {queryResults.multiStatementResults.map((statementResult, index) => (
@@ -272,4 +208,32 @@ export function QueryResults() {
 
   // Handle single statement result
   return <SingleQueryResult queryResult={queryResults} statement="" />;
+}
+
+// Pagination component that will be placed at the bottom of the page
+export function QueryPagination() {
+  const { queryResults } = useDatabaseStore();
+  
+  if (!queryResults || queryResults.rows.length === 0) {
+    return null;
+  }
+
+  const totalPages = Math.ceil(queryResults.rows.length / ROWS_PER_PAGE);
+  const currentPage = 1; // This would need to be managed globally
+  const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ROWS_PER_PAGE, queryResults.rows.length);
+
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-gray-600 dark:text-gray-400">
+          Showing {startIndex + 1} to {endIndex} of {queryResults.rowCount} results
+        </div>
+      </div>
+    </div>
+  );
 }

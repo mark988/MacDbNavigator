@@ -7,6 +7,7 @@ import { SQLEditor } from '@/components/sql-editor';
 import { QueryResults } from '@/components/query-results';
 import { ConnectionModal } from '@/components/connection-modal';
 import { useDatabaseStore } from '@/lib/database-store';
+import { QueryPagination } from '@/components/query-results';
 
 export default function DatabaseManager() {
   const { 
@@ -47,7 +48,7 @@ export default function DatabaseManager() {
       
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Tab Bar */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center overflow-x-auto">
             <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="w-full">
               <div className="flex items-center space-x-1 p-2">
@@ -80,39 +81,47 @@ export default function DatabaseManager() {
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
-
-              {/* Tab Content */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                {tabs.map((tab) => (
-                  <TabsContent
-                    key={tab.id}
-                    value={tab.id}
-                    className="flex-1 flex flex-col overflow-hidden m-0 p-0"
-                  >
-                    {tab.type === 'query' ? (
-                      <div className="flex-1 flex flex-col overflow-hidden">
-                        <SQLEditor
-                          tabId={tab.id}
-                          content={tab.content}
-                          connectionId={tab.connectionId}
-                          databaseName={tab.databaseName}
-                        />
-                        <QueryResults />
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="text-center text-gray-500 dark:text-gray-400">
-                          <p>Table view for {tab.tableName}</p>
-                          <p className="text-sm mt-1">Table browsing functionality coming soon</p>
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-                ))}
-              </div>
             </Tabs>
           </div>
         </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Tabs value={activeTabId || ''} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            {/* Tab Content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {tabs.map((tab) => (
+                <TabsContent
+                  key={tab.id}
+                  value={tab.id}
+                  className="flex-1 flex flex-col overflow-hidden m-0 p-0"
+                >
+                  {tab.type === 'query' ? (
+                    <div className="flex-1 flex flex-col overflow-hidden">
+                      <SQLEditor
+                        tabId={tab.id}
+                        content={tab.content}
+                        connectionId={tab.connectionId}
+                        databaseName={tab.databaseName}
+                      />
+                      <QueryResults />
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center text-gray-500 dark:text-gray-400">
+                        <p>Table view for {tab.tableName}</p>
+                        <p className="text-sm mt-1">Table browsing functionality coming soon</p>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </div>
+          </Tabs>
+        </div>
+
+        {/* Fixed Bottom Pagination Bar */}
+        <QueryPagination />
       </div>
 
       <ConnectionModal />
