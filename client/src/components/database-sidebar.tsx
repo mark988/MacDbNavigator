@@ -92,6 +92,17 @@ export function DatabaseSidebar() {
     }
   };
 
+  const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
+    const connection = connections.find(c => c.id === connectionId);
+    if (connection) {
+      addTab({
+        title: `Query - ${dbName}`,
+        type: 'query',
+        connectionId,
+      });
+    }
+  };
+
   const handleTableClick = (tableName: string, connectionId: number) => {
     const key = `${connectionId}-${tableName}`;
     if (expandedTables.has(key)) {
@@ -186,6 +197,7 @@ export function DatabaseSidebar() {
                 expandedTables={expandedTables}
                 onToggle={() => handleConnectionToggle(connection.id)}
                 onDatabaseClick={handleDatabaseClick}
+                onDatabaseRightClick={handleDatabaseRightClick}
                 onTableClick={handleTableClick}
                 onTableDoubleClick={handleTableDoubleClick}
                 getConnectionStatus={getConnectionStatus}
@@ -229,6 +241,7 @@ interface ConnectionItemProps {
   expandedTables: Set<string>;
   onToggle: () => void;
   onDatabaseClick: (dbName: string, connectionId: number) => void;
+  onDatabaseRightClick: (dbName: string, connectionId: number) => void;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
   getConnectionStatus: (connection: Connection) => React.ReactNode;
@@ -242,6 +255,7 @@ function ConnectionItem({
   expandedTables,
   onToggle, 
   onDatabaseClick,
+  onDatabaseRightClick,
   onTableClick, 
   onTableDoubleClick,
   getConnectionStatus 
@@ -309,6 +323,7 @@ function ConnectionItem({
                 isExpanded={expandedDatabases.has(`${connection.id}-${connection.database}`)}
                 expandedTables={expandedTables}
                 onDatabaseClick={onDatabaseClick}
+                onDatabaseRightClick={onDatabaseRightClick}
                 onTableClick={onTableClick}
                 onTableDoubleClick={onTableDoubleClick}
                 isCurrent={true}
@@ -323,6 +338,7 @@ function ConnectionItem({
                   isExpanded={expandedDatabases.has(`${connection.id}-${dbName}`)}
                   expandedTables={expandedTables}
                   onDatabaseClick={onDatabaseClick}
+                  onDatabaseRightClick={onDatabaseRightClick}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
                 />
