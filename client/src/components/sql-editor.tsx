@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Square, Save, FileText } from 'lucide-react';
+import { Play, Square, Save, FileText, AlertTriangle } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +8,83 @@ import type { QueryResult } from '@shared/schema';
 
 // Monaco Editor will be loaded dynamically
 let monaco: any = null;
+
+// SQL Keywords for highlighting
+const SQL_KEYWORDS = [
+  'SELECT', 'FROM', 'WHERE', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER',
+  'ON', 'AND', 'OR', 'NOT', 'IN', 'EXISTS', 'BETWEEN', 'LIKE', 'IS',
+  'NULL', 'TRUE', 'FALSE', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET',
+  'DELETE', 'CREATE', 'TABLE', 'INDEX', 'VIEW', 'DROP', 'ALTER', 'ADD',
+  'COLUMN', 'PRIMARY', 'KEY', 'FOREIGN', 'REFERENCES', 'UNIQUE', 'CHECK',
+  'DEFAULT', 'AUTO_INCREMENT', 'ORDER', 'BY', 'ASC', 'DESC', 'GROUP',
+  'HAVING', 'LIMIT', 'OFFSET', 'UNION', 'ALL', 'DISTINCT', 'AS', 'CASE',
+  'WHEN', 'THEN', 'ELSE', 'END', 'IF', 'IFNULL', 'COALESCE', 'CAST',
+  'CONVERT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'SUBSTRING', 'CHAR_LENGTH',
+  'UPPER', 'LOWER', 'TRIM', 'CONCAT', 'NOW', 'CURRENT_DATE', 'CURRENT_TIME'
+];
+
+// SQL syntax highlighting function
+function highlightSQL(sql: string): string {
+  if (!sql) return '';
+  
+  let highlighted = sql;
+  
+  // Highlight SQL keywords
+  SQL_KEYWORDS.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+    highlighted = highlighted.replace(regex, `<span class="text-blue-600 dark:text-blue-400 font-semibold">${keyword.toUpperCase()}</span>`);
+  });
+  
+  // Highlight strings
+  highlighted = highlighted.replace(/'([^']*)'/g, '<span class="text-green-600 dark:text-green-400">\'$1\'</span>');
+  highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="text-green-600 dark:text-green-400">"$1"</span>');
+  
+  // Highlight numbers
+  highlighted = highlighted.replace(/\b\d+(\.\d+)?\b/g, '<span class="text-purple-600 dark:text-purple-400">$&</span>');
+  
+  // Highlight comments
+  highlighted = highlighted.replace(/--.*$/gm, '<span class="text-gray-500 dark:text-gray-400 italic">$&</span>');
+  highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span class="text-gray-500 dark:text-gray-400 italic">$&</span>');
+  
+  return highlighted;
+}
+
+// SQL syntax validation function
+function validateSQL(sql: string): string[] {
+  const errors: string[] = [];
+  if (!sql.trim()) return errors;
+  
+  const upperSQL = sql.toUpperCase().trim();
+  
+  // Basic syntax checks
+  if (!upperSQL.match(/^(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|SHOW|DESCRIBE|EXPLAIN)/)) {
+    errors.push('SQL statement should start with a valid command (SELECT, INSERT, UPDATE, etc.)');
+  }
+  
+  // Check for unclosed quotes
+  const singleQuotes = (sql.match(/'/g) || []).length;
+  const doubleQuotes = (sql.match(/"/g) || []).length;
+  if (singleQuotes % 2 !== 0) {
+    errors.push('Unclosed single quote detected');
+  }
+  if (doubleQuotes % 2 !== 0) {
+    errors.push('Unclosed double quote detected');
+  }
+  
+  // Check for basic parentheses matching
+  const openParens = (sql.match(/\(/g) || []).length;
+  const closeParens = (sql.match(/\)/g) || []).length;
+  if (openParens !== closeParens) {
+    errors.push('Mismatched parentheses');
+  }
+  
+  // Check for SELECT without FROM (with some exceptions)
+  if (upperSQL.startsWith('SELECT') && !upperSQL.includes('FROM') && !upperSQL.match(/SELECT\s+\d+|SELECT\s+NOW\(\)|SELECT\s+CURRENT_/)) {
+    errors.push('SELECT statement usually requires a FROM clause');
+  }
+  
+  return errors;
+}
 
 interface SQLEditorProps {
   tabId: string;
@@ -20,6 +97,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
   const editorRef = useRef<HTMLDivElement>(null);
   const monacoEditorRef = useRef<any>(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
+  const [syntaxErrors, setSyntaxErrors] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -270,18 +348,54 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       <div className="flex-1 bg-white dark:bg-gray-900 p-4">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
-            // Simple textarea editor as primary option
-            <textarea
-              value={content}
-              onChange={(e) => updateTabContent(tabId, e.target.value)}
-              className="w-full h-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none outline-none border-none"
-              placeholder="Enter your SQL query here..."
-              style={{ fontSize: '14px', lineHeight: '1.5' }}
-            />
+            // Enhanced textarea with basic SQL highlighting
+            <div className="w-full h-full relative">
+              <textarea
+                value={content}
+                onChange={(e) => {
+                  const newContent = e.target.value;
+                  updateTabContent(tabId, newContent);
+                  // Validate SQL syntax
+                  const errors = validateSQL(newContent);
+                  setSyntaxErrors(errors);
+                }}
+                className="w-full h-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none outline-none border-none relative z-10 bg-transparent"
+                placeholder="Enter your SQL query here..."
+                style={{ fontSize: '14px', lineHeight: '1.5' }}
+                spellCheck={false}
+              />
+              <div
+                className="absolute inset-0 p-4 font-mono text-sm pointer-events-none overflow-hidden whitespace-pre-wrap break-words"
+                style={{ fontSize: '14px', lineHeight: '1.5' }}
+                dangerouslySetInnerHTML={{
+                  __html: highlightSQL(content)
+                }}
+              />
+            </div>
           ) : (
             <div ref={editorRef} className="w-full h-full" />
           )}
         </div>
+        
+        {/* Syntax Error Panel */}
+        {syntaxErrors.length > 0 && (
+          <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <span className="text-sm font-medium text-red-800 dark:text-red-200">
+                Syntax Issues Detected
+              </span>
+            </div>
+            <ul className="space-y-1">
+              {syntaxErrors.map((error, index) => (
+                <li key={index} className="text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
+                  <span className="text-red-400 mt-0.5">•</span>
+                  <span>{error}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
