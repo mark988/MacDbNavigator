@@ -296,7 +296,7 @@ export function QueryResults() {
 
   if (!queryResults) {
     return (
-      <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 min-h-0 py-4">
         <p>Run a query to see results</p>
       </div>
     );
