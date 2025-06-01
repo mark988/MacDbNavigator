@@ -811,8 +811,32 @@
       "executionTime": 920,
       "rowCount": 51,
       "createdAt": "2025-06-01T14:20:33.404Z"
+    },
+    {
+      "id": 99,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 921,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:23:26.070Z"
+    },
+    {
+      "id": 100,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 882,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:25:58.536Z"
+    },
+    {
+      "id": 101,
+      "connectionId": 2,
+      "query": "select * from t_order",
+      "executionTime": 878,
+      "rowCount": 51,
+      "createdAt": "2025-06-01T14:26:10.416Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 99
+  "nextHistoryId": 102
 }

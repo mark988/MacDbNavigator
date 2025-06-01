@@ -332,7 +332,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
 }
 
 export function QueryResults() {
-  const { queryResults } = useDatabaseStore();
+  const { queryResults, queryHistory, activeConnectionId } = useDatabaseStore();
 
   if (!queryResults) {
     return (
@@ -376,8 +376,7 @@ export function QueryResults() {
     );
   }
 
-  // Handle single statement result - try to get the last executed query from history
-  const { queryHistory, activeConnectionId } = useDatabaseStore();
+  // Handle single statement result - get the last executed query from history
   const lastQuery = queryHistory
     .filter(h => h.connectionId === activeConnectionId)
     .sort((a, b) => b.id - a.id)[0];
