@@ -23,35 +23,50 @@ const SQL_KEYWORDS = [
   'UPPER', 'LOWER', 'TRIM', 'CONCAT', 'NOW', 'CURRENT_DATE', 'CURRENT_TIME'
 ];
 
-// SQL syntax highlighting function
-function highlightSQL(sql: string): string {
-  if (!sql) return '';
+// Simple SQL token analysis for highlighting
+function analyzeSQL(sql: string) {
+  const tokens = [];
+  const words = sql.split(/(\s+|[(),;])/);
   
-  let highlighted = sql;
+  for (const word of words) {
+    if (!word.trim()) {
+      tokens.push({ text: word, type: 'whitespace' });
+      continue;
+    }
+    
+    const upperWord = word.toUpperCase();
+    if (SQL_KEYWORDS.includes(upperWord)) {
+      tokens.push({ text: word, type: 'keyword' });
+    } else if (/^\d+(\.\d+)?$/.test(word)) {
+      tokens.push({ text: word, type: 'number' });
+    } else if (/^'.*'$/.test(word) || /^".*"$/.test(word)) {
+      tokens.push({ text: word, type: 'string' });
+    } else if (word.startsWith('--')) {
+      tokens.push({ text: word, type: 'comment' });
+    } else {
+      tokens.push({ text: word, type: 'text' });
+    }
+  }
   
-  // Escape HTML first
-  highlighted = highlighted.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  
-  // Highlight SQL keywords (case insensitive)
-  SQL_KEYWORDS.forEach(keyword => {
-    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-    highlighted = highlighted.replace(regex, (match) => {
-      return `<span style="color: #2563eb; font-weight: 600;">${match.toUpperCase()}</span>`;
-    });
-  });
-  
-  // Highlight strings
-  highlighted = highlighted.replace(/'([^']*)'/g, '<span style="color: #16a34a;">\'$1\'</span>');
-  highlighted = highlighted.replace(/"([^"]*)"/g, '<span style="color: #16a34a;">"$1"</span>');
-  
-  // Highlight numbers
-  highlighted = highlighted.replace(/\b\d+(\.\d+)?\b/g, '<span style="color: #9333ea;">$&</span>');
-  
-  // Highlight comments
-  highlighted = highlighted.replace(/--.*$/gm, '<span style="color: #6b7280; font-style: italic;">$&</span>');
-  highlighted = highlighted.replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #6b7280; font-style: italic;">$&</span>');
-  
-  return highlighted;
+  return tokens;
+}
+
+// Create highlighted spans for display
+function createHighlightedContent(tokens: Array<{text: string, type: string}>) {
+  return tokens.map(token => {
+    switch (token.type) {
+      case 'keyword':
+        return `<span style="color: #2563eb; font-weight: 600;">${token.text.toUpperCase()}</span>`;
+      case 'number':
+        return `<span style="color: #9333ea;">${token.text}</span>`;
+      case 'string':
+        return `<span style="color: #16a34a;">${token.text}</span>`;
+      case 'comment':
+        return `<span style="color: #6b7280; font-style: italic;">${token.text}</span>`;
+      default:
+        return token.text;
+    }
+  }).join('');
 }
 
 // SQL syntax validation function
@@ -353,43 +368,38 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       <div className="flex-1 bg-white dark:bg-gray-900 p-4">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
-            // SQL Editor with overlay highlighting
-            <div className="w-full h-full relative">
-              {/* Highlighted background layer */}
-              <pre 
-                className="absolute inset-0 p-4 font-mono text-sm pointer-events-none overflow-hidden whitespace-pre-wrap break-words m-0"
-                style={{ 
-                  fontSize: '14px', 
-                  lineHeight: '1.5',
-                  color: 'transparent',
-                  background: 'transparent'
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: highlightSQL(content || '')
-                }}
-              />
+            // Simple SQL Editor with preview
+            <div className="w-full h-full flex flex-col">
+              {/* SQL Highlighting Preview */}
+              {content && (
+                <div className="p-3 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Highlighted Preview:</div>
+                  <div 
+                    className="font-mono text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: createHighlightedContent(analyzeSQL(content))
+                    }}
+                  />
+                </div>
+              )}
               
-              {/* Interactive textarea overlay */}
-              <textarea
-                value={content}
-                onChange={(e) => {
-                  const newContent = e.target.value;
-                  updateTabContent(tabId, newContent);
-                  // Validate SQL syntax
-                  const errors = validateSQL(newContent);
-                  setSyntaxErrors(errors);
-                }}
-                className="w-full h-full p-4 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
-                placeholder="Enter your SQL query here..."
-                style={{ 
-                  fontSize: '14px', 
-                  lineHeight: '1.5',
-                  color: 'transparent',
-                  caretColor: '#374151',
-                  background: 'transparent'
-                }}
-                spellCheck={false}
-              />
+              {/* Main textarea editor */}
+              <div className="flex-1">
+                <textarea
+                  value={content}
+                  onChange={(e) => {
+                    const newContent = e.target.value;
+                    updateTabContent(tabId, newContent);
+                    // Validate SQL syntax
+                    const errors = validateSQL(newContent);
+                    setSyntaxErrors(errors);
+                  }}
+                  className="w-full h-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none outline-none border-none"
+                  placeholder="Enter your SQL query here..."
+                  style={{ fontSize: '14px', lineHeight: '1.5' }}
+                  spellCheck={false}
+                />
+              </div>
             </div>
           ) : (
             <div ref={editorRef} className="w-full h-full" />
