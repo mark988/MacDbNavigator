@@ -586,13 +586,13 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       )}
 
       {/* SQL Editor */}
-      <div className="h-48 bg-white dark:bg-gray-900 p-4">
-        <div className="h-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="h-48 bg-white dark:bg-gray-900 p-2">
+        <div className="h-full bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
             // SQL Editor with direct highlighting and line numbers
             <div className="w-full h-full flex overflow-hidden">
               {/* Line numbers */}
-              <div className="bg-gray-100 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 px-2 py-4 font-mono text-sm text-gray-500 dark:text-gray-400 select-none min-w-[3rem] text-right">
+              <div className="bg-gray-100 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 px-2 py-2 font-mono text-sm text-gray-500 dark:text-gray-400 select-none min-w-[3rem] text-right">
                 {(content || '').split('\n').map((_, index) => (
                   <div key={index} style={{ fontSize: '14px', lineHeight: '1.5' }}>
                     {index + 1}
@@ -604,7 +604,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
               <div className="flex-1 relative overflow-hidden">
                 {/* Highlighted text layer (background) */}
                 <div 
-                  className="absolute inset-0 p-4 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
+                  className="absolute inset-0 p-2 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
                   style={{ 
                     fontSize: '14px', 
                     lineHeight: '1.5',
@@ -642,7 +642,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
                     const selected = target.value.substring(target.selectionStart, target.selectionEnd);
                     setSelectedText(selected);
                   }}
-                  className="w-full h-full p-4 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
+                  className="w-full h-full p-2 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
                   placeholder="Enter your SQL query here..."
                   style={{ 
                     fontSize: '14px', 
@@ -657,7 +657,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
                 
                 {/* Cursor visibility helper */}
                 <div 
-                  className="absolute inset-0 p-4 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden opacity-0"
+                  className="absolute inset-0 p-2 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden opacity-0"
                   style={{ 
                     fontSize: '14px', 
                     lineHeight: '1.5',
