@@ -253,7 +253,7 @@ function ConnectionItem({
       if (!res.ok) throw new Error('Failed to fetch database info');
       return res.json() as Promise<DatabaseInfo>;
     },
-    enabled: isExpanded && !!connection.isConnected,
+    enabled: isExpanded,
   });
 
   return (
