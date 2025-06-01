@@ -17,13 +17,16 @@ interface SingleQueryResultProps {
 }
 
 function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
-  const { currentPage, activeConnectionId } = useDatabaseStore();
+  const { currentPage, activeConnectionId, queryHistory } = useDatabaseStore();
   const [viewMode, setViewMode] = useState<'table' | 'json'>('table');
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; column: string } | null>(null);
   const [editingValue, setEditingValue] = useState<string>('');
   const [pendingChanges, setPendingChanges] = useState<Map<string, any>>(new Map());
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Get the last query to determine the correct connection ID for updates
+  const lastQuery = queryHistory.sort((a, b) => b.id - a.id)[0];
 
   const totalPages = Math.ceil(queryResult.rows.length / ROWS_PER_PAGE);
   const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
@@ -65,12 +68,14 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
 
   const saveChangesMutation = useMutation({
     mutationFn: async () => {
-      if (!tableName || !activeConnectionId || pendingChanges.size === 0) {
+      if (!tableName || pendingChanges.size === 0) {
         throw new Error('Cannot save changes: missing table name or connection');
       }
 
+      // Use the connection ID from the last query instead of activeConnectionId
+      const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
       const changes = Array.from(pendingChanges.values());
-      const response = await fetch(`/api/connections/${activeConnectionId}/table/${tableName}/update`, {
+      const response = await fetch(`/api/connections/${queryConnectionId}/table/${tableName}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
