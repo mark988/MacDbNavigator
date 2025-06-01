@@ -59,3 +59,20 @@ export type DatabaseInfo = {
   databases: string[];
   tables: DatabaseObject[];
 };
+
+export type TableColumn = {
+  name: string;
+  type: string;
+  nullable: boolean;
+  default?: string | null;
+  key?: string;
+  extra?: string;
+  maxLength?: number | null;
+  precision?: number | null;
+  scale?: number | null;
+};
+
+export type TableStructure = {
+  tableName: string;
+  columns: TableColumn[];
+};

@@ -170,6 +170,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get table structure/columns
+  app.get("/api/connections/:id/tables/:tableName/columns", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const tableName = req.params.tableName;
+      const connection = await storage.getConnection(id);
+      
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+
+      let columns: any[] = [];
+
+      try {
+        if (connection.type === 'mysql') {
+          const mysqlConnection = await mysql.createConnection({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+          });
+
+          const [result] = await mysqlConnection.execute(`DESCRIBE ${tableName}`);
+          columns = (result as any[]).map(row => ({
+            name: row.Field,
+            type: row.Type,
+            nullable: row.Null === 'YES',
+            key: row.Key,
+            default: row.Default,
+            extra: row.Extra
+          }));
+
+          await mysqlConnection.end();
+        } else if (connection.type === 'postgresql') {
+          const client = new Client({
+            host: connection.host,
+            port: connection.port,
+            user: connection.username,
+            password: connection.password,
+            database: connection.database,
+            ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
+          });
+          await client.connect();
+
+          const result = await client.query(`
+            SELECT 
+              column_name as name,
+              data_type as type,
+              is_nullable = 'YES' as nullable,
+              column_default as default_value,
+              character_maximum_length,
+              numeric_precision,
+              numeric_scale
+            FROM information_schema.columns 
+            WHERE table_name = $1 
+            AND table_schema = 'public'
+            ORDER BY ordinal_position
+          `, [tableName]);
+
+          columns = result.rows.map(row => ({
+            name: row.name,
+            type: row.type,
+            nullable: row.nullable,
+            default: row.default_value,
+            maxLength: row.character_maximum_length,
+            precision: row.numeric_precision,
+            scale: row.numeric_scale
+          }));
+
+          await client.end();
+        }
+      } catch (err: any) {
+        return res.status(500).json({ error: `Failed to fetch table structure: ${err.message}` });
+      }
+
+      res.json({ tableName, columns });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to fetch table structure" });
+    }
+  });
+
   app.post("/api/connections/:id/query", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

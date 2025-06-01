@@ -11,10 +11,11 @@ import {
   Moon, 
   Sun,
   Circle,
-  Loader2
+  Loader2,
+  Columns
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
-import type { Connection, DatabaseInfo, QueryHistory } from '@shared/schema';
+import type { Connection, DatabaseInfo, QueryHistory, TableStructure } from '@shared/schema';
 
 export function DatabaseSidebar() {
   const { 
@@ -31,6 +32,8 @@ export function DatabaseSidebar() {
   } = useDatabaseStore();
 
   const [expandedConnections, setExpandedConnections] = useState<Set<number>>(new Set());
+  const [expandedDatabases, setExpandedDatabases] = useState<Set<string>>(new Set());
+  const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set());
 
   const { data: connectionsData, refetch: refetchConnections } = useQuery({
     queryKey: ['/api/connections'],
@@ -63,7 +66,24 @@ export function DatabaseSidebar() {
   const handleConnectionClick = (connection: Connection) => {
     setActiveConnection(connection.id);
     if (!expandedConnections.has(connection.id)) {
-      setExpandedConnections(prev => new Set([...prev, connection.id]));
+      setExpandedConnections(prev => {
+        const newSet = new Set(prev);
+        newSet.add(connection.id);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDatabaseClick = (dbName: string, connectionId: number) => {
+    const key = `${connectionId}-${dbName}`;
+    if (expandedDatabases.has(key)) {
+      setExpandedDatabases(prev => {
+        const newSet = new Set(Array.from(prev));
+        newSet.delete(key);
+        return newSet;
+      });
+    } else {
+      setExpandedDatabases(prev => new Set([...Array.from(prev), key]));
     }
   };
 
@@ -203,7 +223,7 @@ function ConnectionItem({
       if (!res.ok) throw new Error('Failed to fetch database info');
       return res.json() as Promise<DatabaseInfo>;
     },
-    enabled: isExpanded && connection.isConnected,
+    enabled: isExpanded && !!connection.isConnected,
   });
 
   return (
