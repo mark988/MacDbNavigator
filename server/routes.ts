@@ -383,12 +383,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await mysqlConnection.end();
       } else if (connection.type === 'postgresql') {
+        // Use the same database connection approach as the query endpoint
+        const targetDatabase = connection.database || 'postgres';
         const client = new Client({
           host: connection.host,
           port: connection.port,
           user: connection.username,
           password: connection.password,
-          database: connection.database,
+          database: targetDatabase,
           ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
         });
         await client.connect();
