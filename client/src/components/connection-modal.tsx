@@ -92,11 +92,17 @@ export function ConnectionModal() {
     setTestError('');
 
     try {
+      // Create a unique test connection name to avoid conflicts
+      const testFormData = {
+        ...formData,
+        name: `__TEST__${formData.name}__${Date.now()}`
+      };
+
       // First create a temporary connection to test
       const tempConnection = await fetch('/api/connections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(testFormData),
       });
 
       if (!tempConnection.ok) {
@@ -106,35 +112,36 @@ export function ConnectionModal() {
 
       const connection = await tempConnection.json();
 
-      // Test the connection
-      const testResponse = await fetch(`/api/connections/${connection.id}/test`, {
-        method: 'POST',
-      });
-
-      const testResult = await testResponse.json();
-
-      if (testResult.connected) {
-        setTestStatus('success');
-        toast({
-          title: "Connection successful",
-          description: "Successfully connected to the database",
+      try {
+        // Test the connection
+        const testResponse = await fetch(`/api/connections/${connection.id}/test`, {
+          method: 'POST',
         });
-        // Clean up the temporary connection after successful test
+
+        const testResult = await testResponse.json();
+
+        if (testResult.connected) {
+          setTestStatus('success');
+          toast({
+            title: "Connection successful",
+            description: "Successfully connected to the database",
+          });
+        } else {
+          setTestStatus('error');
+          setTestError(testResult.error || 'Connection failed');
+          toast({
+            title: "Connection failed",
+            description: testResult.error || 'Unable to connect to the database',
+            variant: "destructive",
+          });
+        }
+      } finally {
+        // Always clean up the temporary connection
         await fetch(`/api/connections/${connection.id}`, {
           method: 'DELETE',
         });
-      } else {
-        setTestStatus('error');
-        setTestError(testResult.error || 'Connection failed');
-        toast({
-          title: "Connection failed",
-          description: testResult.error || 'Unable to connect to the database',
-          variant: "destructive",
-        });
-        // Clean up the temporary connection after failed test
-        await fetch(`/api/connections/${connection.id}`, {
-          method: 'DELETE',
-        });
+        // Refresh the connections list to remove any temporary entries
+        queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
       }
 
     } catch (error: any) {
