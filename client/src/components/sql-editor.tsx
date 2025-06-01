@@ -353,42 +353,37 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       <div className="flex-1 bg-white dark:bg-gray-900 p-4">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
-            // Enhanced textarea with overlay highlighting
-            <div className="w-full h-full relative">
-              {/* Highlighted background layer */}
-              <div 
-                className="absolute inset-0 p-4 font-mono text-sm pointer-events-none overflow-hidden whitespace-pre-wrap break-words text-transparent"
-                style={{ fontSize: '14px', lineHeight: '1.5', wordWrap: 'break-word' }}
-                dangerouslySetInnerHTML={{
-                  __html: highlightSQL(content || '')
-                }}
-              />
-              {/* Interactive textarea overlay */}
-              <textarea
-                value={content}
-                onChange={(e) => {
-                  const newContent = e.target.value;
-                  updateTabContent(tabId, newContent);
-                  // Validate SQL syntax
-                  const errors = validateSQL(newContent);
-                  setSyntaxErrors(errors);
-                }}
-                className="w-full h-full p-4 font-mono text-sm bg-transparent text-gray-900 dark:text-gray-100 resize-none outline-none border-none relative z-10 caret-gray-900 dark:caret-gray-100"
-                placeholder="Enter your SQL query here..."
-                style={{ 
-                  fontSize: '14px', 
-                  lineHeight: '1.5',
-                  color: 'transparent',
-                  caretColor: '#374151'
-                }}
-                spellCheck={false}
-              />
-              {/* Text color overlay for cursor visibility */}
-              <div 
-                className="absolute inset-0 p-4 font-mono text-sm pointer-events-none overflow-hidden whitespace-pre-wrap break-words text-gray-900 dark:text-gray-100 opacity-0"
-                style={{ fontSize: '14px', lineHeight: '1.5' }}
-              >
-                {content}
+            // SQL Editor with highlighting preview
+            <div className="w-full h-full flex flex-col">
+              {/* SQL Preview with highlighting */}
+              {content && (
+                <div className="mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs border">
+                  <div className="text-gray-600 dark:text-gray-400 mb-1">SQL Preview (with highlighting):</div>
+                  <div 
+                    className="font-mono text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: highlightSQL(content)
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* Main textarea editor */}
+              <div className="flex-1">
+                <textarea
+                  value={content}
+                  onChange={(e) => {
+                    const newContent = e.target.value;
+                    updateTabContent(tabId, newContent);
+                    // Validate SQL syntax
+                    const errors = validateSQL(newContent);
+                    setSyntaxErrors(errors);
+                  }}
+                  className="w-full h-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none outline-none border-none"
+                  placeholder="Enter your SQL query here..."
+                  style={{ fontSize: '14px', lineHeight: '1.5' }}
+                  spellCheck={false}
+                />
               </div>
             </div>
           ) : (
