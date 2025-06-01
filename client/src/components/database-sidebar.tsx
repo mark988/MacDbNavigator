@@ -65,13 +65,18 @@ export function DatabaseSidebar() {
 
   const handleConnectionClick = (connection: Connection) => {
     setActiveConnection(connection.id);
-    if (!expandedConnections.has(connection.id)) {
-      setExpandedConnections(prev => {
-        const newSet = new Set(prev);
-        newSet.add(connection.id);
-        return newSet;
-      });
-    }
+  };
+
+  const handleConnectionToggle = (connectionId: number) => {
+    setExpandedConnections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(connectionId)) {
+        newSet.delete(connectionId);
+      } else {
+        newSet.add(connectionId);
+      }
+      return newSet;
+    });
   };
 
   const handleDatabaseClick = (dbName: string, connectionId: number) => {
@@ -179,7 +184,7 @@ export function DatabaseSidebar() {
                 isExpanded={expandedConnections.has(connection.id)}
                 expandedDatabases={expandedDatabases}
                 expandedTables={expandedTables}
-                onToggle={() => handleConnectionClick(connection)}
+                onToggle={() => handleConnectionToggle(connection.id)}
                 onDatabaseClick={handleDatabaseClick}
                 onTableClick={handleTableClick}
                 onTableDoubleClick={handleTableDoubleClick}
@@ -253,24 +258,40 @@ function ConnectionItem({
 
   return (
     <div className="group">
-      <Collapsible open={isExpanded} onOpenChange={onToggle}>
-        <CollapsibleTrigger asChild>
-          <div className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors ${
-            isActive 
-              ? 'bg-blue-500 text-white' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-          }`}>
-            <div className="flex items-center space-x-2 flex-1 min-w-0">
-              {getConnectionStatus(connection)}
-              <span className="text-sm font-medium truncate">
-                {connection.name}
-              </span>
-            </div>
-            <ChevronRight className={`w-4 h-4 transition-transform ${
-              isExpanded ? 'rotate-90' : ''
-            }`} />
+      <Collapsible open={isExpanded}>
+        <div className={`flex items-center p-2 rounded-lg transition-colors ${
+          isActive 
+            ? 'bg-blue-500 text-white' 
+            : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+        }`}>
+          <div 
+            className="flex items-center space-x-2 flex-1 min-w-0 cursor-pointer"
+            onClick={() => {
+              // Set as active connection but don't toggle expansion
+              if (!isActive) {
+                // This will be handled by the parent component
+              }
+            }}
+          >
+            {getConnectionStatus(connection)}
+            <span className="text-sm font-medium truncate">
+              {connection.name}
+            </span>
           </div>
-        </CollapsibleTrigger>
+          <CollapsibleTrigger asChild>
+            <button 
+              className="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+              }}
+            >
+              <ChevronRight className={`w-4 h-4 transition-transform ${
+                isExpanded ? 'rotate-90' : ''
+              }`} />
+            </button>
+          </CollapsibleTrigger>
+        </div>
         
         <CollapsibleContent className="ml-4 mt-1 space-y-1">
           {isLoading ? (
