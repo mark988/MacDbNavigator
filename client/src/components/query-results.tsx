@@ -49,9 +49,9 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="h-80 flex flex-col border-t border-gray-200 dark:border-gray-700">
       {/* Results Header */}
-      <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+      <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
@@ -99,57 +99,55 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
 
       {/* Results Content */}
       {queryResult.rows.length === 0 ? (
-        <div className="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm">
+        <div className="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm flex-shrink-0">
           No data found
         </div>
       ) : (
-        <div className="flex-1 overflow-auto max-h-96 border border-gray-200 dark:border-gray-700">
+        <div className="flex-1 min-h-0 overflow-auto border-x border-gray-200 dark:border-gray-700">
           {viewMode === 'table' ? (
-            <div className="overflow-auto">
-              <Table>
-                <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
-                  <TableRow>
+            <Table>
+              <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+                <TableRow>
+                  {queryResult.columns.map((column: string) => (
+                    <TableHead
+                      key={column}
+                      className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 whitespace-nowrap min-w-32"
+                    >
+                      {column}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentRows.map((row: any, index: number) => (
+                  <TableRow
+                    key={startIndex + index}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700"
+                  >
                     {queryResult.columns.map((column: string) => (
-                      <TableHead
+                      <TableCell
                         key={column}
-                        className="text-left px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 whitespace-nowrap min-w-32"
+                        className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
                       >
-                        {column}
-                      </TableHead>
+                        {row[column] === null || row[column] === undefined ? (
+                          <span className="text-gray-400 italic">NULL</span>
+                        ) : typeof row[column] === 'object' ? (
+                          <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
+                            {JSON.stringify(row[column])}
+                          </span>
+                        ) : String(row[column]).length > 100 ? (
+                          <span title={String(row[column])}>
+                            {String(row[column]).substring(0, 100)}...
+                          </span>
+                        ) : (
+                          String(row[column])
+                        )}
+                      </TableCell>
                     ))}
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {currentRows.map((row: any, index: number) => (
-                    <TableRow
-                      key={startIndex + index}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700"
-                    >
-                      {queryResult.columns.map((column: string) => (
-                        <TableCell
-                          key={column}
-                          className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 whitespace-nowrap"
-                        >
-                          {row[column] === null || row[column] === undefined ? (
-                            <span className="text-gray-400 italic">NULL</span>
-                          ) : typeof row[column] === 'object' ? (
-                            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded">
-                              {JSON.stringify(row[column])}
-                            </span>
-                          ) : String(row[column]).length > 100 ? (
-                            <span title={String(row[column])}>
-                              {String(row[column]).substring(0, 100)}...
-                            </span>
-                          ) : (
-                            String(row[column])
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
             <div className="p-4">
               <pre className="text-sm font-mono bg-gray-50 dark:bg-gray-800 p-4 rounded-lg overflow-auto">
@@ -162,9 +160,9 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
 
       {/* Pagination */}
       {queryResult.rows.length > 0 && totalPages > 1 && (
-        <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+        <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-xs text-gray-600 dark:text-gray-400">
               Showing {startIndex + 1} to {endIndex} of {queryResult.rowCount} results
             </div>
             <div className="flex items-center space-x-2">
@@ -232,7 +230,7 @@ export function QueryResults() {
 
   if (!queryResults) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
+      <div className="h-80 flex items-center justify-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
         <p>Run a query to see results</p>
       </div>
     );
@@ -241,9 +239,9 @@ export function QueryResults() {
   // Handle multi-statement results
   if (queryResults.multiStatementResults && queryResults.multiStatementResults.length > 0) {
     return (
-      <div className="flex-1 flex flex-col">
+      <div className="h-80 flex flex-col border-t border-gray-200 dark:border-gray-700">
         <Tabs defaultValue="statement-0" className="flex-1 flex flex-col">
-          <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0">
+          <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0 flex-shrink-0">
             {queryResults.multiStatementResults.map((statementResult, index) => (
               <TabsTrigger
                 key={`statement-${index}`}
@@ -259,7 +257,7 @@ export function QueryResults() {
             <TabsContent
               key={`statement-${index}`}
               value={`statement-${index}`}
-              className="flex-1 flex flex-col mt-0"
+              className="flex-1 flex flex-col mt-0 min-h-0"
             >
               <SingleQueryResult
                 queryResult={statementResult.result}
