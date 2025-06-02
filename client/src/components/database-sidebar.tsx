@@ -418,6 +418,7 @@ export function DatabaseSidebar() {
                 handleSaveEdit={handleSaveEdit}
                 handleCancelEdit={handleCancelEdit}
                 setEditingName={setEditingName}
+                onTableBackup={handleTableBackup}
               />
             ))}
           </div>
@@ -477,6 +478,7 @@ interface ConnectionItemProps {
   handleSaveEdit: (connectionId: number) => void;
   handleCancelEdit: () => void;
   setEditingName: (name: string) => void;
+  onTableBackup: (tableName: string, connectionId: number, databaseName: string) => void;
 }
 
 function ConnectionItem({ 
@@ -497,7 +499,8 @@ function ConnectionItem({
   handleEditConnection,
   handleSaveEdit,
   handleCancelEdit,
-  setEditingName
+  setEditingName,
+  onTableBackup
 }: ConnectionItemProps) {
   const { data: databaseInfo, isLoading } = useQuery({
     queryKey: ['/api/connections', connection.id, 'databases'],
