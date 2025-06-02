@@ -178,7 +178,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   };
 
   return (
-    <div className="flex flex-col h-full border-t border-gray-200 dark:border-gray-700" style={{ marginTop: '-0.75rem' }}>
+    <div className="flex flex-col border-t border-gray-200 dark:border-gray-700" style={{ marginTop: '-0.75rem', height: 'calc(100vh - 400px)', minHeight: '400px' }}>
       {/* Results Header */}
       <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -411,8 +411,8 @@ export function QueryResults() {
     };
 
     return (
-      <div className="flex flex-col flex-1 border-t border-gray-200 dark:border-gray-700">
-        <Tabs defaultValue="statement-0" className="flex-1 flex flex-col">
+      <div className="flex flex-col border-t border-gray-200 dark:border-gray-700" style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}>
+        <Tabs defaultValue="statement-0" className="flex-1 flex flex-col h-full">
           <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0 flex-shrink-0">
             {queryResults.multiStatementResults.map((result, index) => (
               <TabsTrigger
@@ -425,7 +425,7 @@ export function QueryResults() {
             ))}
           </TabsList>
           {queryResults.multiStatementResults.map((result, index) => (
-            <TabsContent key={index} value={`statement-${index}`} className="flex-1 m-0 p-0">
+            <TabsContent key={index} value={`statement-${index}`} className="flex-1 m-0 p-0 h-full overflow-hidden">
               <SingleQueryResult queryResult={result.result} statement={result.statement} />
             </TabsContent>
           ))}
