@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useDatabaseStore } from '@/lib/database-store';
-import { Download, Save, X, Edit2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Save, X, Download, Edit3 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 
 const ROWS_PER_PAGE = 30;
 
@@ -35,98 +36,92 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
 
   const handleCellClick = (rowIndex: number, column: string, value: any) => {
     setEditingCell({ rowIndex, column });
-    setEditingValue(String(value || ''));
+    setEditingValue(value?.toString() || '');
   };
 
   const handleCellBlur = () => {
-    setEditingCell(null);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      if (editingCell) {
-        const cellKey = `${editingCell.rowIndex}-${editingCell.column}`;
+    if (editingCell) {
+      const cellKey = `${editingCell.rowIndex}-${editingCell.column}`;
+      const originalValue = currentRows[editingCell.rowIndex][editingCell.column];
+      
+      if (editingValue !== originalValue?.toString()) {
         const newChanges = new Map(pendingChanges);
         newChanges.set(cellKey, editingValue);
         setPendingChanges(newChanges);
       }
-      setEditingCell(null);
-    } else if (e.key === 'Escape') {
-      setEditingCell(null);
     }
+    setEditingCell(null);
+    setEditingValue('');
   };
 
-  const saveChanges = async () => {
-    if (pendingChanges.size === 0) return;
-
-    try {
-      // Use the connection ID from the last query instead of activeConnectionId
-      const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
-      
-      // Convert pendingChanges to the correct format expected by the backend
-      const originalData = queryResult?.rows || [];
-      const changes = Array.from(pendingChanges.entries()).map(([cellKey, newValue]) => {
-        const [rowIndexStr, column] = cellKey.split('-');
-        const rowIndex = parseInt(rowIndexStr);
-        const originalRow = originalData[rowIndex];
-        return {
-          rowIndex,
-          column,
-          newValue,
-          oldValue: originalRow ? originalRow[column] : null
-        };
-      });
-      
-      // Get the current active tab to extract database information
-      const activeTab = tabs.find(tab => tab.id === activeTabId);
-      const targetDatabase = activeTab?.databaseName;
-      
-      console.log('Save operation database info:', {
-        tableName,
-        targetDatabase,
-        activeTab: activeTab?.title,
-        queryConnectionId
-      });
-      
-      const response = await fetch(`/api/connections/${queryConnectionId}/table/${tableName}/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          changes,
-          originalData: originalData,
-          database: targetDatabase,
-          fullQuery: lastQuery?.query
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save changes');
+  const updateMutation = useMutation({
+    mutationFn: async (data: {
+      changes: Array<{
+        id: string;
+        [key: string]: any;
+      }>;
+      originalData: Array<any>;
+      database: string | null;
+      schema: string | null;
+      fullQuery: string;
+    }) => {
+      if (!activeConnectionId || !tableName) {
+        throw new Error('No active connection or table name');
       }
 
-      setPendingChanges(new Map());
-      toast({
-        title: "Success",
-        description: `Saved ${changes.length} change(s) to ${tableName}`,
+      const response = await apiRequest({
+        method: 'POST',
+        url: `/api/connections/${activeConnectionId}/table/${tableName}/update`,
+        body: data,
       });
 
-      // Refresh the query results
-      queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
-    } catch (error) {
-      console.error('Save error:', error);
+      return response;
+    },
+    onSuccess: () => {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save changes to database",
+        title: "Success",
+        description: "Data updated successfully",
       });
-    }
+      setPendingChanges(new Map());
+      queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update data",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const saveChanges = () => {
+    if (pendingChanges.size === 0 || !tableName) return;
+
+    const changes = Array.from(pendingChanges.entries()).map(([cellKey, value]) => {
+      const [rowIndexStr, column] = cellKey.split('-');
+      const rowIndex = parseInt(rowIndexStr);
+      const originalRow = currentRows[rowIndex];
+      
+      return {
+        id: originalRow.id?.toString() || '',
+        [column]: value,
+      };
+    });
+
+    const activeTab = tabs.find(tab => tab.id === activeTabId);
+    updateMutation.mutate({
+      changes,
+      originalData: currentRows,
+      database: activeTab?.databaseName || null,
+      schema: null,
+      fullQuery: statement,
+    });
   };
 
   const discardChanges = () => {
     setPendingChanges(new Map());
-    toast({
-      title: "Changes discarded",
-      description: "All pending changes have been discarded",
-    });
+    setEditingCell(null);
+    setEditingValue('');
   };
 
   const exportResults = () => {
@@ -156,7 +151,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   };
 
   return (
-    <div className="flex flex-col flex-1 border-t border-gray-200 dark:border-gray-700 -mt-1">
+    <div className="flex flex-col h-full border-t border-gray-200 dark:border-gray-700">
       {/* Results Header */}
       <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -178,7 +173,8 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
                   variant="default"
                   size="sm"
                   onClick={saveChanges}
-                  className="flex items-center text-xs bg-green-600 hover:bg-green-700"
+                  disabled={updateMutation.isPending}
+                  className="flex items-center text-xs"
                 >
                   <Save className="w-3 h-3 mr-1" />
                   Save ({pendingChanges.size})
@@ -211,82 +207,83 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
 
       {/* Results Content */}
       {queryResult.rows.length === 0 ? (
-        <div className="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm flex-shrink-0">
+        <div className="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm">
           No data found
         </div>
       ) : (
-        <div className="border-x border-gray-200 dark:border-gray-700">
-          {/* Fixed Header */}
-          <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-500 flex-shrink-0">
-            <div className="flex">
-              {queryResult.columns.map((column: string) => (
-                <div
-                  key={column}
-                  className="px-3 py-2 font-medium text-xs text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-32 flex-1 border-r border-gray-200 dark:border-gray-600 last:border-r-0 uppercase tracking-wider"
-                >
-                  {column}
-                </div>
-              ))}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Table Container */}
+          <div className="flex-1 border-x border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
+            {/* Fixed Header */}
+            <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-500 flex-shrink-0">
+              <div className="flex">
+                {queryResult.columns.map((column: string) => (
+                  <div
+                    key={column}
+                    className="px-3 py-2 font-medium text-xs text-gray-800 dark:text-gray-200 whitespace-nowrap min-w-32 flex-1 border-r border-gray-200 dark:border-gray-600 last:border-r-0 uppercase tracking-wider"
+                  >
+                    {column}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          
-          {/* Scrollable Body */}
-          <div className="overflow-auto" style={{height: '250px'}}>
-            <div>
-              {currentRows.map((row: any, index: number) => (
-                <div
-                  key={startIndex + index}
-                  className="hover:bg-blue-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex transition-colors duration-150 group"
-                >
-                  {queryResult.columns.map((column: string) => {
-                    const cellKey = `${index}-${column}`;
-                    const isEditing = editingCell?.rowIndex === index && editingCell?.column === column;
-                    const hasChange = pendingChanges.has(cellKey);
-                    
-                    return (
-                      <div
-                        key={column}
-                        className="relative px-3 py-1 text-xs text-gray-900 dark:text-gray-100 whitespace-nowrap min-w-32 flex-1 border-r border-gray-100 dark:border-gray-700 last:border-r-0 cursor-text overflow-hidden"
-                        onClick={() => tableName && handleCellClick(index, column, row[column])}
-                      >
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editingValue}
-                            onChange={(e) => setEditingValue(e.target.value)}
-                            onBlur={() => handleCellBlur()}
-                            onKeyDown={(e) => handleKeyDown(e)}
-                            className="w-full bg-white dark:bg-gray-900 border border-blue-500 rounded px-1 py-0 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            autoFocus
-                          />
-                        ) : (
-                          <div className="flex items-center justify-between">
-                            <span className={`truncate ${hasChange ? 'bg-yellow-100 dark:bg-yellow-900 px-1 rounded' : ''}`}>
-                              {hasChange ? (
-                                <span className="text-orange-600 dark:text-orange-400">
-                                  {pendingChanges.get(cellKey)}
-                                </span>
-                              ) : (
-                                String(row[column])
+            
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-auto min-h-0">
+              <div>
+                {currentRows.map((row: any, index: number) => (
+                  <div
+                    key={startIndex + index}
+                    className="hover:bg-blue-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex transition-colors duration-150 group"
+                  >
+                    {queryResult.columns.map((column: string) => {
+                      const cellKey = `${index}-${column}`;
+                      const isEditing = editingCell?.rowIndex === index && editingCell?.column === column;
+                      const hasChange = pendingChanges.has(cellKey);
+                      
+                      return (
+                        <div
+                          key={column}
+                          className="relative px-3 py-1 text-xs text-gray-900 dark:text-gray-100 whitespace-nowrap min-w-32 flex-1 border-r border-gray-100 dark:border-gray-700 last:border-r-0 cursor-text overflow-hidden"
+                          onClick={() => tableName && handleCellClick(index, column, row[column])}
+                        >
+                          {isEditing && tableName ? (
+                            <input
+                              type="text"
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onBlur={handleCellBlur}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleCellBlur();
+                                } else if (e.key === 'Escape') {
+                                  setEditingCell(null);
+                                  setEditingValue('');
+                                }
+                              }}
+                              className="w-full bg-white dark:bg-gray-800 border border-blue-500 rounded px-1 py-0.5 text-xs focus:outline-none"
+                              autoFocus
+                            />
+                          ) : (
+                            <div className={`flex items-center justify-between h-full ${hasChange ? 'bg-yellow-100 dark:bg-yellow-900/30' : ''}`}>
+                              <span className="truncate">
+                                {hasChange ? pendingChanges.get(cellKey) : (row[column] ?? '')}
+                              </span>
+                              {tableName && (
+                                <Edit3 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0" />
                               )}
-                            </span>
-                            {tableName && (
-                              <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2" />
-                            )}
-                          </div>
-                        )}
-                        {hasChange && (
-                          <div className="absolute top-0 right-0 w-2 h-2 bg-orange-400 rounded-full transform translate-x-1 -translate-y-1"></div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           
-          {/* Pagination Bar */}
+          {/* Pagination Bar - Fixed at bottom */}
           <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
             <div className="flex items-center space-x-2">
               <Button
@@ -298,19 +295,19 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
                 Previous
               </Button>
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                Page {currentPage} of {Math.ceil(queryResult.rows.length / ROWS_PER_PAGE)}
+                Page {currentPage} of {totalPages}
               </span>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(Math.min(Math.ceil(queryResult.rows.length / ROWS_PER_PAGE), currentPage + 1))}
-                disabled={currentPage === Math.ceil(queryResult.rows.length / ROWS_PER_PAGE)}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
               >
                 Next
               </Button>
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              Showing {((currentPage - 1) * ROWS_PER_PAGE) + 1} to {Math.min(currentPage * ROWS_PER_PAGE, queryResult.rows.length)} of {queryResult.rows.length} results
+              Showing {startIndex + 1} to {endIndex} of {queryResult.rows.length} results
             </div>
           </div>
         </div>
@@ -347,7 +344,7 @@ export function QueryResults() {
             ))}
           </TabsList>
           {queryResults.multiStatementResults.map((result, index) => (
-            <TabsContent key={index} value={`statement-${index}`} className="flex-1 min-h-0 mt-0">
+            <TabsContent key={index} value={`statement-${index}`} className="flex-1 m-0 p-0">
               <SingleQueryResult queryResult={result.result} statement={result.statement} />
             </TabsContent>
           ))}
@@ -361,40 +358,6 @@ export function QueryResults() {
 }
 
 export function QueryPagination() {
-  const { queryResults, currentPage, setCurrentPage } = useDatabaseStore();
-
-  if (!queryResults || queryResults.rows.length === 0) {
-    return null;
-  }
-
-  const totalPages = Math.ceil(queryResults.rows.length / ROWS_PER_PAGE);
-
-  return (
-    <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </Button>
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          Page {currentPage} of {totalPages}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </Button>
-      </div>
-      <div className="text-xs text-gray-500 dark:text-gray-400">
-        Showing {((currentPage - 1) * ROWS_PER_PAGE) + 1} to {Math.min(currentPage * ROWS_PER_PAGE, queryResults.rows.length)} of {queryResults.rows.length} results
-      </div>
-    </div>
-  );
+  // This component is no longer needed as pagination is now built into SingleQueryResult
+  return null;
 }
