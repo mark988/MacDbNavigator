@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { DatabaseContextMenu } from './context-menu';
+import { TableContextMenu } from './table-context-menu';
+import { BackupDialog } from './backup-dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { Connection, DatabaseInfo, QueryHistory, TableStructure } from '@shared/schema';
 
@@ -46,6 +48,12 @@ export function DatabaseSidebar() {
   const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set());
   const [editingConnectionId, setEditingConnectionId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState<string>('');
+  const [backupDialog, setBackupDialog] = useState<{
+    open: boolean;
+    tableName: string;
+    connectionId: number;
+    databaseName: string;
+  }>({ open: false, tableName: '', connectionId: 0, databaseName: '' });
 
   const { data: connectionsData, refetch: refetchConnections } = useQuery({
     queryKey: ['/api/connections'],
@@ -222,6 +230,88 @@ export function DatabaseSidebar() {
 
   const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
     handleNewQuery(dbName, connectionId);
+  };
+
+  const handleTableQuery = (tableName: string, connectionId: number, databaseName: string) => {
+    const queryContent = `SELECT * FROM ${tableName}`;
+    const newTabId = Date.now().toString();
+    
+    addTab({
+      title: `Query - ${tableName}`,
+      type: 'query',
+      connectionId,
+      databaseName
+    });
+    
+    // 延迟执行查询以确保tab已创建
+    setTimeout(() => {
+      const activeTab = tabs.find(tab => tab.connectionId === connectionId && tab.databaseName === databaseName);
+      if (activeTab) {
+        updateTabContent(activeTab.id, queryContent);
+        // 自动执行查询
+        executeQuery(queryContent, connectionId, databaseName);
+      }
+    }, 100);
+  };
+
+  const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {
+    const newTabId = Date.now().toString();
+    
+    addTab({
+      title: `结构 - ${tableName}`,
+      type: 'table',
+      connectionId,
+      tableName,
+      databaseName
+    });
+  };
+
+  const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
+    setBackupDialog({
+      open: true,
+      tableName,
+      connectionId,
+      databaseName
+    });
+  };
+
+  const executeQuery = async (query: string, connectionId: number, databaseName: string) => {
+    try {
+      setIsExecuting(true);
+      
+      const response = await fetch(`/api/connections/${connectionId}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, database: databaseName })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Query execution failed');
+      }
+      
+      const result = await response.json();
+      setQueryResults(result);
+      
+      // 添加到查询历史
+      await fetch('/api/query-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          connectionId,
+          query,
+          executedAt: new Date().toISOString()
+        })
+      });
+      
+    } catch (error) {
+      toast({
+        title: "查询失败",
+        description: "执行查询时发生错误",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExecuting(false);
+    }
   };
 
   const handleTableClick = (tableName: string, connectionId: number) => {
@@ -670,6 +760,8 @@ function TableItem({
   onTableClick,
   onTableDoubleClick
 }: TableItemProps) {
+  const { activeTabId, tabs } = useDatabaseStore();
+  
   const { data: tableStructure, isLoading } = useQuery({
     queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'],
     queryFn: async () => {
@@ -680,23 +772,38 @@ function TableItem({
     enabled: isExpanded,
   });
 
+  // Get database name from current context
+  const getCurrentDatabase = () => {
+    const activeTab = tabs.find(tab => tab.id === activeTabId);
+    return activeTab?.databaseName || '';
+  };
+
   return (
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onTableClick(tableName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <div 
-            className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              onTableDoubleClick(tableName, connectionId);
-            }}
+          <TableContextMenu
+            tableName={tableName}
+            connectionId={connectionId}
+            databaseName={getCurrentDatabase()}
+            onQueryTable={handleTableQuery}
+            onViewStructure={handleTableStructure}
+            onBackupTable={handleTableBackup}
           >
-            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-              isExpanded ? 'rotate-90' : ''
-            }`} />
-            <Table className="w-3 h-3 mr-2" />
-            <span>{tableName}</span>
-          </div>
+            <div 
+              className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                onTableDoubleClick(tableName, connectionId);
+              }}
+            >
+              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+                isExpanded ? 'rotate-90' : ''
+              }`} />
+              <Table className="w-3 h-3 mr-2" />
+              <span>{tableName}</span>
+            </div>
+          </TableContextMenu>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="ml-6 space-y-0.5">
