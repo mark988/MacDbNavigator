@@ -20,9 +20,25 @@ interface EditingValues extends Partial<TableColumn> {
   baseType?: string;
 }
 
+interface NewColumnData {
+  name: string;
+  type: string;
+  baseType: string;
+  nullable: boolean;
+  default: string;
+}
+
 export function TableStructureView({ tableName, connectionId, databaseName }: TableStructureViewProps) {
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [editingValues, setEditingValues] = useState<EditingValues>({});
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnData, setNewColumnData] = useState<NewColumnData>({
+    name: '',
+    type: '',
+    baseType: '',
+    nullable: true,
+    default: ''
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -97,6 +113,67 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
     },
   });
 
+  const addColumnMutation = useMutation({
+    mutationFn: async (columnData: { name: string; type: string; nullable: boolean; default?: string }) => {
+      const response = await apiRequest(
+        'POST',
+        `/api/connections/${connectionId}/table/${tableName}/add-column`,
+        {
+          columnData,
+          database: databaseName
+        }
+      );
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'] 
+      });
+      toast({
+        title: "字段添加成功",
+        description: "新字段已成功添加到表中",
+        duration: 3000,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "添加失败",
+        description: error.message || "添加字段时发生错误",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteColumnMutation = useMutation({
+    mutationFn: async (columnName: string) => {
+      const response = await apiRequest(
+        'DELETE',
+        `/api/connections/${connectionId}/table/${tableName}/column/${columnName}`,
+        {
+          database: databaseName
+        }
+      );
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'] 
+      });
+      toast({
+        title: "字段删除成功",
+        description: "字段已成功从表中删除",
+        duration: 3000,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "删除失败",
+        description: error.message || "删除字段时发生错误",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEditColumn = (column: TableColumn) => {
     setEditingColumn(column.name);
     
@@ -137,6 +214,39 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
     setEditingValues({});
   };
 
+  const handleAddColumn = () => {
+    if (!newColumnData.name || !newColumnData.type) {
+      toast({
+        title: "信息不完整",
+        description: "请填写字段名称和数据类型",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addColumnMutation.mutate({
+      name: newColumnData.name,
+      type: newColumnData.type,
+      nullable: newColumnData.nullable,
+      default: newColumnData.default || undefined
+    });
+
+    setIsAddingColumn(false);
+    setNewColumnData({
+      name: '',
+      type: '',
+      baseType: '',
+      nullable: true,
+      default: ''
+    });
+  };
+
+  const handleDeleteColumn = (columnName: string) => {
+    if (confirm(`确定要删除字段 "${columnName}" 吗？此操作无法撤销。`)) {
+      deleteColumnMutation.mutate(columnName);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
@@ -164,12 +274,25 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
     <div className="p-6 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-lg">
-            <Table className="w-5 h-5 mr-2" />
-            表结构: {tableName}
-          </CardTitle>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            数据库: {databaseName} | 字段数量: {tableStructure.columns?.length || 0}
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="flex items-center text-lg">
+                <Table className="w-5 h-5 mr-2" />
+                表结构: {tableName}
+              </CardTitle>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                数据库: {databaseName} | 字段数量: {tableStructure.columns?.length || 0}
+              </div>
+            </div>
+            <Button
+              onClick={() => setIsAddingColumn(true)}
+              disabled={isAddingColumn}
+              size="sm"
+              className="flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              新增字段
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -294,17 +417,125 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
                         </Button>
                       </div>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEditColumn(column)}
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </Button>
+                      <div className="flex space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditColumn(column)}
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteColumn(column.name)}
+                          disabled={deleteColumnMutation.isPending}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
+              {isAddingColumn && (
+                <TableRow className="bg-blue-50 dark:bg-blue-900/20">
+                  <TableCell>
+                    <Input
+                      value={newColumnData.name}
+                      onChange={(e) => setNewColumnData({ ...newColumnData, name: e.target.value })}
+                      placeholder="字段名称"
+                      className="w-32"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col space-y-1">
+                      <select
+                        value={newColumnData.baseType}
+                        onChange={(e) => {
+                          const baseType = e.target.value;
+                          let fullType = baseType;
+                          
+                          if (baseType === 'varchar' || baseType === 'character varying') {
+                            fullType = `${baseType}(255)`;
+                          } else if (baseType === 'char' || baseType === 'character') {
+                            fullType = `${baseType}(1)`;
+                          } else if (baseType === 'numeric' || baseType === 'decimal') {
+                            fullType = `${baseType}(10,2)`;
+                          }
+                          
+                          setNewColumnData({ 
+                            ...newColumnData, 
+                            baseType: baseType,
+                            type: fullType 
+                          });
+                        }}
+                        className="px-2 py-1 border rounded w-40 text-sm bg-white dark:bg-gray-800 text-black dark:text-white border-gray-300 dark:border-gray-600"
+                      >
+                        <option value="">选择基础类型</option>
+                        {postgresqlDataTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                      <Input
+                        value={newColumnData.type}
+                        onChange={(e) => setNewColumnData({ ...newColumnData, type: e.target.value })}
+                        className="w-40 text-sm"
+                        placeholder="如: varchar(255), numeric(10,2)"
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <select
+                      value={newColumnData.nullable ? 'true' : 'false'}
+                      onChange={(e) => setNewColumnData({ ...newColumnData, nullable: e.target.value === 'true' })}
+                      className="px-2 py-1 border rounded bg-white dark:bg-gray-800 text-black dark:text-white border-gray-300 dark:border-gray-600"
+                    >
+                      <option value="true">是</option>
+                      <option value="false">否</option>
+                    </select>
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      value={newColumnData.default}
+                      onChange={(e) => setNewColumnData({ ...newColumnData, default: e.target.value })}
+                      className="w-32"
+                      placeholder="默认值"
+                    />
+                  </TableCell>
+                  <TableCell>-</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      <Button
+                        size="sm"
+                        onClick={handleAddColumn}
+                        disabled={addColumnMutation.isPending}
+                      >
+                        <Save className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setIsAddingColumn(false);
+                          setNewColumnData({
+                            name: '',
+                            type: '',
+                            baseType: '',
+                            nullable: true,
+                            default: ''
+                          });
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
