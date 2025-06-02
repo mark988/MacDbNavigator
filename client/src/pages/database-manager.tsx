@@ -44,29 +44,35 @@ export default function DatabaseManager() {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Tab Bar */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-          <div className="flex items-center overflow-x-auto">
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-gray-900 dark:to-slate-900 border-b border-gray-200/60 dark:border-gray-700/60 flex-shrink-0 shadow-sm">
+          <div className="flex items-center overflow-x-auto scrollbar-hide">
             <Tabs
               value={activeTabId || ""}
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <div className="flex items-center space-x-1 p-4">
+              <div className="flex items-center space-x-2 px-6 py-3">
                 <TabsList className="flex space-x-1 bg-transparent h-auto p-0">
                   {tabs.map((tab) => (
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
-                      className="flex items-center px-4 py-2 rounded-lg text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 data-[state=active]:border data-[state=active]:border-blue-200 dark:data-[state=active]:bg-blue-900/20 dark:data-[state=active]:text-blue-400 dark:data-[state=active]:border-blue-800"
+                      className="group relative flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ease-in-out
+                        bg-white/80 dark:bg-gray-800/50 text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-gray-700/50 shadow-sm
+                        hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-600/60 hover:-translate-y-0.5
+                        data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 
+                        data-[state=active]:text-white data-[state=active]:border-blue-400 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25
+                        dark:data-[state=active]:from-blue-600 dark:data-[state=active]:to-indigo-600 dark:data-[state=active]:border-blue-500"
                     >
-                      <span className="mr-2">{tab.title}</span>
+                      <span className="mr-2 font-medium tracking-wide">{tab.title}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => handleCloseTab(tab.id, e)}
-                        className="ml-1 p-0.5 h-auto hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                        className="ml-1 p-1 h-auto w-auto opacity-60 hover:opacity-100 rounded-md transition-all duration-150
+                          hover:bg-black/10 dark:hover:bg-white/10 group-data-[state=active]:hover:bg-white/20"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-3.5 h-3.5" />
                       </Button>
                     </TabsTrigger>
                   ))}
@@ -76,7 +82,10 @@ export default function DatabaseManager() {
                   variant="ghost"
                   size="sm"
                   onClick={handleAddTab}
-                  className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+                  className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 
+                    bg-white/60 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/50 rounded-xl
+                    hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-600/60 
+                    hover:-translate-y-0.5 transition-all duration-200 ease-in-out"
                 >
                   <Plus className="w-4 h-4" />
                 </Button>

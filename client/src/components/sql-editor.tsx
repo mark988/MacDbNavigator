@@ -648,18 +648,21 @@ export function SQLEditor({
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-br from-slate-50/50 to-gray-50/50 dark:from-gray-900/50 dark:to-slate-900/50">
       {/* Toolbar */}
-      <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <Button
               onClick={executeQuery}
               disabled={isExecuting || !activeConnection}
-              className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 
+                disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl text-sm font-medium transition-all duration-200 
+                shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-0.5 
+                disabled:shadow-none disabled:translate-y-0"
             >
               {isExecuting ? (
-                <Square className="w-4 h-4 mr-2" />
+                <Square className="w-4 h-4 mr-2 animate-pulse" />
               ) : (
                 <Play className="w-4 h-4 mr-2" />
               )}
@@ -670,13 +673,16 @@ export function SQLEditor({
                   : "Run Query"}
             </Button>
 
-            <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
+            <div className="h-6 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent dark:via-gray-600"></div>
 
             <Button
               variant="ghost"
               onClick={formatQuery}
               disabled={!content?.trim()}
-              className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
+              className="flex items-center px-4 py-2.5 text-gray-600 dark:text-gray-300 
+                bg-white/60 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/50
+                hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-600/60 
+                hover:-translate-y-0.5 rounded-xl text-sm transition-all duration-200"
             >
               <FileText className="w-4 h-4 mr-2" />
               {isFormatted ? "Restore" : "Format"}
@@ -685,31 +691,36 @@ export function SQLEditor({
             <Button
               variant="ghost"
               onClick={saveQuery}
-              className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
+              className="flex items-center px-4 py-2.5 text-gray-600 dark:text-gray-300 
+                bg-white/60 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/50
+                hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-600/60 
+                hover:-translate-y-0.5 rounded-xl text-sm transition-all duration-200"
             >
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center space-x-4">
+            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 px-3 py-2 
+              bg-white/70 dark:bg-gray-800/50 rounded-lg border border-gray-200/40 dark:border-gray-700/40">
               {activeConnection ? (
-                <span>Connected to {activeConnection.name}</span>
+                <span>Connected to <span className="text-blue-600 dark:text-blue-400 font-semibold">{activeConnection.name}</span></span>
               ) : (
-                <span>No connection selected</span>
+                <span className="text-amber-600 dark:text-amber-400">No connection selected</span>
               )}
             </div>
             {activeConnection && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3 px-3 py-2 
+                bg-white/70 dark:bg-gray-800/50 rounded-lg border border-gray-200/40 dark:border-gray-700/40">
                 <div
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                     activeConnection.isConnected
-                      ? "bg-green-400"
+                      ? "bg-emerald-400 shadow-lg shadow-emerald-400/50 animate-pulse"
                       : "bg-gray-400"
                   }`}
                 ></div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                   {activeConnection.isConnected ? "Connected" : "Disconnected"}
                 </span>
               </div>
@@ -720,13 +731,15 @@ export function SQLEditor({
 
       {/* Progress Bar */}
       {isExecuting && (
-        <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="text-xs text-gray-600 dark:text-gray-400">
+        <div className="px-6 py-3 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 
+          border-b border-blue-200/30 dark:border-blue-700/30 backdrop-blur-sm">
+          <div className="flex items-center space-x-4">
+            <div className="text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center">
+              <div className="w-4 h-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               Executing query...
             </div>
-            <Progress value={progress} className="flex-1 h-1" />
-            <div className="text-xs text-gray-500 dark:text-gray-500 min-w-[35px] text-right">
+            <Progress value={progress} className="flex-1 h-2 bg-blue-100 dark:bg-blue-900/50" />
+            <div className="text-sm font-semibold text-blue-600 dark:text-blue-400 min-w-[40px] text-right">
               {Math.round(progress)}%
             </div>
           </div>
@@ -734,16 +747,20 @@ export function SQLEditor({
       )}
 
       {/* SQL Editor */}
-      <div className="bg-white dark:bg-gray-900 px-2 pt-1 pb-1" style={{ height: 'calc(9 * 1.5em + 2rem)' }}>
-        <div className="h-full bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
+      <div className="bg-white/50 dark:bg-gray-900/50 px-6 py-4" style={{ height: 'calc(9 * 1.5em + 2rem)' }}>
+        <div className="h-full bg-white/90 dark:bg-gray-800/90 rounded-2xl border border-gray-200/60 dark:border-gray-700/60 
+          shadow-lg shadow-gray-900/5 dark:shadow-black/20 overflow-hidden backdrop-blur-sm">
           {!monaco || !isEditorReady ? (
             // SQL Editor with direct highlighting and line numbers
-            <div className="w-full h-full flex overflow-hidden">
+            <div className="w-full h-full flex overflow-hidden rounded-2xl">
               {/* Line numbers */}
-              <div className="bg-gray-100 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 px-1 py-1 font-mono text-sm text-gray-500 dark:text-gray-400 select-none min-w-[3rem] text-right">
+              <div className="bg-gradient-to-b from-slate-100/80 to-gray-100/80 dark:from-gray-700/80 dark:to-gray-800/80 
+                border-r border-gray-200/60 dark:border-gray-600/60 px-3 py-4 font-mono text-sm 
+                text-gray-500 dark:text-gray-400 select-none min-w-[4rem] text-right backdrop-blur-sm">
                 {(content || "").split("\n").map((_, index) => (
                   <div
                     key={index}
+                    className="leading-6 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-150"
                     style={{ fontSize: "14px", lineHeight: "1.5" }}
                   >
                     {index + 1}
@@ -752,7 +769,7 @@ export function SQLEditor({
               </div>
 
               {/* Editor area */}
-              <div className="flex-1 relative overflow-hidden">
+              <div className="flex-1 relative overflow-hidden bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm">
                 {/* Highlighted text layer (background) */}
                 <div
                   className="absolute inset-0 p-1 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
