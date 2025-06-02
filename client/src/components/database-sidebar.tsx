@@ -1031,6 +1031,7 @@ function OtherDatabaseItem({
                 isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
                 onTableClick={onTableClick}
                 onTableDoubleClick={onTableDoubleClick}
+                onTableBackup={onTableBackup}
               />
             ))
           ) : (
