@@ -298,12 +298,13 @@ export function DatabaseSidebar() {
               Connections
             </h3>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={() => setConnectionModalOpen(true)}
-              className="p-1"
+              className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 border-blue-200 dark:border-blue-700 transition-colors"
+              title="添加新连接"
             >
-              <Plus className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </Button>
           </div>
 
