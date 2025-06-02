@@ -650,34 +650,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await client.query(`SET search_path TO "${database}", public`);
         }
 
+        // Debug: Check current database and search path
+        const dbResult = await client.query('SELECT current_database(), current_schemas(true)');
+        console.log('Current database:', dbResult.rows[0]);
+        
+        // Debug: Check if table exists in any schema
+        const tableExistsQuery = `
+          SELECT schemaname, tablename 
+          FROM pg_tables 
+          WHERE tablename = $1
+        `;
+        const tableExistsResult = await client.query(tableExistsQuery, [tableName]);
+        console.log('Table exists check:', tableExistsResult.rows);
+
+        if (tableExistsResult.rows.length === 0) {
+          await client.end();
+          return res.status(404).json({ error: `Table ${tableName} not found in any schema` });
+        }
+
+        // Use the found schema
+        const tableSchema = tableExistsResult.rows[0].schemaname;
+        console.log(`Using schema: ${tableSchema} for table: ${tableName}`);
+
         // Build ALTER TABLE statements based on changes
-        // Use simple table name since we set the search_path
+        // Use schema-qualified table name
         const alterStatements = [];
+        const qualifiedTableName = tableSchema === 'public' ? `"${tableName}"` : `"${tableSchema}"."${tableName}"`;
         
         if (changes.name && changes.name !== columnName) {
-          alterStatements.push(`ALTER TABLE "${tableName}" RENAME COLUMN "${columnName}" TO "${changes.name}"`);
+          alterStatements.push(`ALTER TABLE ${qualifiedTableName} RENAME COLUMN "${columnName}" TO "${changes.name}"`);
         }
         
         if (changes.type) {
           const currentColumnName = changes.name || columnName;
-          alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
+          alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
         }
         
         if (changes.nullable !== undefined) {
           const currentColumnName = changes.name || columnName;
           if (changes.nullable) {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
+            alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
           } else {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
+            alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
           }
         }
         
         if (changes.default !== undefined) {
           const currentColumnName = changes.name || columnName;
           if (changes.default === '' || changes.default === null) {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
+            alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
           } else {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
+            alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
           }
         }
 
