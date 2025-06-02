@@ -879,6 +879,15 @@ function TableItem({
     });
   };
 
+  const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
+    setBackupDialog({
+      open: true,
+      tableName,
+      connectionId,
+      databaseName
+    });
+  };
+
   return (
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onTableClick(tableName, connectionId)}>
@@ -1019,6 +1028,7 @@ function OtherDatabaseItem({
                 isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
                 onTableClick={onTableClick}
                 onTableDoubleClick={onTableDoubleClick}
+                onTableBackup={handleTableBackup}
               />
             ))
           ) : (
