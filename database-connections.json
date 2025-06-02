@@ -1115,8 +1115,24 @@
       "executionTime": 895,
       "rowCount": 51,
       "createdAt": "2025-06-02T02:59:04.059Z"
+    },
+    {
+      "id": 137,
+      "connectionId": 1,
+      "query": "SELECT\n    *\nFROM t_order",
+      "executionTime": 904,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T03:01:14.287Z"
+    },
+    {
+      "id": 138,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "executionTime": 893,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T03:01:57.520Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 137
+  "nextHistoryId": 139
 }
