@@ -787,9 +787,8 @@ function TableItem({
 
   // 表格查询处理函数
   const handleTableQuery = async (tableName: string, connectionId: number, databaseName: string) => {
-    // 在PostgreSQL中，表通常在与数据库同名的schema中
-    const fullTableName = `${databaseName}.${tableName}`;
-    const queryContent = `SELECT * FROM ${fullTableName} LIMIT 100;`;
+    // 在PostgreSQL中，使用引号包围schema和表名
+    const queryContent = `SELECT * FROM "${databaseName}"."${tableName}" LIMIT 100;`;
     
     // 创建新的查询标签
     const newTab = {
