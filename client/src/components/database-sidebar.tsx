@@ -234,7 +234,6 @@ export function DatabaseSidebar() {
 
   const handleTableQuery = (tableName: string, connectionId: number, databaseName: string) => {
     const queryContent = `SELECT * FROM ${tableName}`;
-    const newTabId = Date.now().toString();
     
     addTab({
       title: `Query - ${tableName}`,
@@ -243,26 +242,26 @@ export function DatabaseSidebar() {
       databaseName
     });
     
-    // 延迟执行查询以确保tab已创建
-    setTimeout(() => {
-      const activeTab = tabs.find(tab => tab.connectionId === connectionId && tab.databaseName === databaseName);
-      if (activeTab) {
-        updateTabContent(activeTab.id, queryContent);
-        // 自动执行查询
-        executeQuery(queryContent, connectionId, databaseName);
-      }
-    }, 100);
+    toast({
+      title: "新查询标签已创建",
+      description: `为表 "${tableName}" 创建了查询标签`,
+      duration: 3000,
+    });
   };
 
   const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {
-    const newTabId = Date.now().toString();
-    
     addTab({
       title: `结构 - ${tableName}`,
       type: 'table',
       connectionId,
       tableName,
       databaseName
+    });
+    
+    toast({
+      title: "表结构标签已创建",
+      description: `为表 "${tableName}" 创建了结构查看标签`,
+      duration: 3000,
     });
   };
 
@@ -273,45 +272,6 @@ export function DatabaseSidebar() {
       connectionId,
       databaseName
     });
-  };
-
-  const executeQuery = async (query: string, connectionId: number, databaseName: string) => {
-    try {
-      setIsExecuting(true);
-      
-      const response = await fetch(`/api/connections/${connectionId}/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, database: databaseName })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Query execution failed');
-      }
-      
-      const result = await response.json();
-      setQueryResults(result);
-      
-      // 添加到查询历史
-      await fetch('/api/query-history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          connectionId,
-          query,
-          executedAt: new Date().toISOString()
-        })
-      });
-      
-    } catch (error) {
-      toast({
-        title: "查询失败",
-        description: "执行查询时发生错误",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExecuting(false);
-    }
   };
 
   const handleTableClick = (tableName: string, connectionId: number) => {
@@ -448,6 +408,14 @@ export function DatabaseSidebar() {
           </div>
         </div>
       </ScrollArea>
+
+      <BackupDialog
+        open={backupDialog.open}
+        onOpenChange={(open) => setBackupDialog({ ...backupDialog, open })}
+        tableName={backupDialog.tableName}
+        connectionId={backupDialog.connectionId}
+        databaseName={backupDialog.databaseName}
+      />
     </div>
   );
 }
@@ -782,28 +750,23 @@ function TableItem({
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onTableClick(tableName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <TableContextMenu
-            tableName={tableName}
-            connectionId={connectionId}
-            databaseName={getCurrentDatabase()}
-            onQueryTable={handleTableQuery}
-            onViewStructure={handleTableStructure}
-            onBackupTable={handleTableBackup}
+          <div 
+            className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onTableDoubleClick(tableName, connectionId);
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              console.log('Right click on table:', tableName);
+            }}
           >
-            <div 
-              className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                onTableDoubleClick(tableName, connectionId);
-              }}
-            >
-              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-                isExpanded ? 'rotate-90' : ''
-              }`} />
-              <Table className="w-3 h-3 mr-2" />
-              <span>{tableName}</span>
-            </div>
-          </TableContextMenu>
+            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+              isExpanded ? 'rotate-90' : ''
+            }`} />
+            <Table className="w-3 h-3 mr-2" />
+            <span>{tableName}</span>
+          </div>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="ml-6 space-y-0.5">
