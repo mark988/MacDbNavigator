@@ -2,7 +2,7 @@
   "connections": [
     {
       "id": 2,
-      "name": "test2",
+      "name": "不错",
       "type": "postgresql",
       "host": "47.113.222.217",
       "port": 5432,

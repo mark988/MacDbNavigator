@@ -431,7 +431,7 @@ function ConnectionItem({
                 type="text"
                 value={editingName}
                 onChange={(e) => setEditingName(e.target.value)}
-                className="text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 flex-1"
+                className="text-sm font-medium bg-white dark:bg-gray-800 border border-gray-400 dark:border-gray-500 rounded px-2 py-1 flex-1 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
