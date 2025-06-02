@@ -696,6 +696,7 @@ interface DatabaseItemProps {
   onDatabaseRightClick: (dbName: string, connectionId: number) => void;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
+  onTableBackup: (tableName: string, connectionId: number, databaseName: string) => void;
   isCurrent: boolean;
 }
 
@@ -709,6 +710,7 @@ function DatabaseItem({
   onDatabaseRightClick,
   onTableClick,
   onTableDoubleClick,
+  onTableBackup,
   isCurrent
 }: DatabaseItemProps) {
   return (
@@ -748,6 +750,7 @@ function DatabaseItem({
               isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
               onTableClick={onTableClick}
               onTableDoubleClick={onTableDoubleClick}
+              onTableBackup={onTableBackup}
             />
           ))}
         </CollapsibleContent>
@@ -763,6 +766,7 @@ interface TableItemProps {
   isExpanded: boolean;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
+  onTableBackup: (tableName: string, connectionId: number, databaseName: string) => void;
 }
 
 function TableItem({
@@ -771,7 +775,8 @@ function TableItem({
   databaseName,
   isExpanded,
   onTableClick,
-  onTableDoubleClick
+  onTableDoubleClick,
+  onTableBackup
 }: TableItemProps) {
   const { activeTabId, tabs, addTab } = useDatabaseStore();
   const { toast } = useToast();
@@ -921,7 +926,7 @@ function TableItem({
             </div>
             <div 
               className="flex items-center p-1 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900 rounded cursor-pointer"
-              onClick={() => handleTableBackup(tableName, connectionId, databaseName)}
+              onClick={() => onTableBackup(tableName, connectionId, databaseName)}
             >
               <Download className="w-3 h-3 mr-2" />
               备份
