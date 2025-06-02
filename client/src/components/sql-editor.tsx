@@ -586,7 +586,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       )}
 
       {/* SQL Editor */}
-      <div className="h-20 bg-white dark:bg-gray-900 px-2 pt-1 pb-0">
+      <div className="h-16 bg-white dark:bg-gray-900 px-2 pt-1 pb-0 mb-0">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
             // SQL Editor with direct highlighting and line numbers
