@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
   Database, 
   Table, 
@@ -131,35 +132,33 @@ export function DatabaseSidebar() {
     const connection = connections.find(c => c.id === connectionId);
     if (!connection) return;
 
-    if (confirm(`确定要删除连接 "${connection.name}" 吗？此操作无法撤销。`)) {
-      try {
-        const response = await fetch(`/api/connections/${connectionId}`, {
-          method: 'DELETE'
-        });
-        
-        if (!response.ok) {
-          throw new Error('删除连接失败');
-        }
-        
-        // 如果删除的是当前活动连接，清除活动状态
-        if (activeConnectionId === connectionId) {
-          setActiveConnection(null);
-        }
-        
-        // 刷新连接列表
-        refetchConnections();
-        
-        toast({
-          title: "连接已删除",
-          description: `连接 "${connection.name}" 已成功删除`,
-        });
-      } catch (error) {
-        toast({
-          title: "删除失败",
-          description: "删除连接时发生错误",
-          variant: "destructive",
-        });
+    try {
+      const response = await fetch(`/api/connections/${connectionId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('删除连接失败');
       }
+      
+      // 如果删除的是当前活动连接，清除活动状态
+      if (activeConnectionId === connectionId) {
+        setActiveConnection(null);
+      }
+      
+      // 刷新连接列表
+      refetchConnections();
+      
+      toast({
+        title: "连接已删除",
+        description: `连接 "${connection.name}" 已成功删除`,
+      });
+    } catch (error) {
+      toast({
+        title: "删除失败",
+        description: "删除连接时发生错误",
+        variant: "destructive",
+      });
     }
   };
 
@@ -358,16 +357,36 @@ function ConnectionItem({
           </div>
           
           <div className="flex items-center space-x-1">
-            <button 
-              className="p-1 hover:bg-red-500 hover:text-white rounded opacity-0 group-hover:opacity-100 transition-all"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteConnection(connection.id);
-              }}
-              title="删除连接"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button 
+                  className="p-1 hover:bg-red-500 hover:text-white rounded opacity-0 group-hover:opacity-100 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  title="删除连接"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>删除连接</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    确定要删除连接 "{connection.name}" 吗？此操作无法撤销。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>取消</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={() => onDeleteConnection(connection.id)}
+                  >
+                    删除
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             
             <CollapsibleTrigger asChild>
               <button 
