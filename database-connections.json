@@ -12,6 +12,19 @@
       "useSSL": false,
       "isConnected": false,
       "createdAt": "2025-06-01T11:01:15.949Z"
+    },
+    {
+      "id": 4,
+      "name": "嗷嗷",
+      "type": "postgresql",
+      "host": "47.113.222.217",
+      "port": 5432,
+      "database": null,
+      "username": "postgres",
+      "password": "mark8355141",
+      "useSSL": false,
+      "isConnected": false,
+      "createdAt": "2025-06-02T08:33:44.866Z"
     }
   ],
   "queryHistories": [
@@ -1630,8 +1643,16 @@
       "executionTime": 922,
       "rowCount": 51,
       "createdAt": "2025-06-02T07:30:08.792Z"
+    },
+    {
+      "id": 203,
+      "connectionId": 4,
+      "query": "select * from t_order ",
+      "executionTime": 1579,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T08:34:57.256Z"
     }
   ],
-  "nextConnectionId": 3,
-  "nextHistoryId": 203
+  "nextConnectionId": 5,
+  "nextHistoryId": 204
 }

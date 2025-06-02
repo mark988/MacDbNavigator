@@ -138,6 +138,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       pendingChangesSize: pendingChanges.size
     });
     
+    console.log('About to call updateMutation with:', requestData);
     updateMutation.mutate(requestData);
   };
 
