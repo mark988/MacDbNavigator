@@ -533,6 +533,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           await client.connect();
 
+          // Set search_path to include the target database schema
+          if (targetDatabase && targetDatabase !== 'postgres') {
+            await client.query(`SET search_path TO "${targetDatabase}", public`);
+          }
+
           const queryResult = await client.query(query);
           const executionTime = Date.now() - startTime;
 

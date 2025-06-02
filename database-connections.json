@@ -1830,8 +1830,40 @@
       "executionTime": 894,
       "rowCount": null,
       "createdAt": "2025-06-02T11:49:15.065Z"
+    },
+    {
+      "id": 228,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 873,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:50:35.662Z"
+    },
+    {
+      "id": 229,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 870,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:50:51.716Z"
+    },
+    {
+      "id": 230,
+      "connectionId": 4,
+      "query": "select * from t_order",
+      "executionTime": 878,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:51:56.709Z"
+    },
+    {
+      "id": 231,
+      "connectionId": 4,
+      "query": "select * from t_order",
+      "executionTime": 914,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:52:28.099Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 228
+  "nextHistoryId": 232
 }
