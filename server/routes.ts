@@ -647,31 +647,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Build ALTER TABLE statements based on changes
         const alterStatements = [];
+        const fullTableName = `"public"."${tableName}"`;
         
         if (changes.name && changes.name !== columnName) {
-          alterStatements.push(`ALTER TABLE "${tableName}" RENAME COLUMN "${columnName}" TO "${changes.name}"`);
+          alterStatements.push(`ALTER TABLE ${fullTableName} RENAME COLUMN "${columnName}" TO "${changes.name}"`);
         }
         
         if (changes.type) {
           const currentColumnName = changes.name || columnName;
-          alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
+          alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
         }
         
         if (changes.nullable !== undefined) {
           const currentColumnName = changes.name || columnName;
           if (changes.nullable) {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
+            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
           } else {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
+            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
           }
         }
         
         if (changes.default !== undefined) {
           const currentColumnName = changes.name || columnName;
           if (changes.default === '' || changes.default === null) {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
+            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
           } else {
-            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
+            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
           }
         }
 
