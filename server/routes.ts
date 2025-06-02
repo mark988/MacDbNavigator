@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertConnectionSchema, insertQueryHistorySchema, type QueryResult, type DatabaseInfo } from "@shared/schema";
 import mysql from 'mysql2/promise';
 import { Client } from 'pg';
+import { createPostgreSQLClient } from './database-helper';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Connection management routes
