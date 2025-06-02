@@ -301,6 +301,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           await client.connect();
 
+          // Set search_path to include the target database schema
+          if (dbName && dbName !== 'postgres') {
+            await client.query(`SET search_path TO "${dbName}", public`);
+          }
+
           const result = await client.query(`
             SELECT 
               column_name as name,
@@ -312,9 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               numeric_scale
             FROM information_schema.columns 
             WHERE table_name = $1 
-            AND table_schema = 'public'
+            AND table_schema = $2
             ORDER BY ordinal_position
-          `, [tableName]);
+          `, [tableName, dbName || 'public']);
 
           columns = result.rows.map(row => ({
             name: row.name,

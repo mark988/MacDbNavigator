@@ -23,9 +23,9 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
   const queryClient = useQueryClient();
 
   const { data: tableStructure, isLoading } = useQuery({
-    queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'],
+    queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns', databaseName],
     queryFn: async () => {
-      const response = await fetch(`/api/connections/${connectionId}/tables/${tableName}/columns`);
+      const response = await fetch(`/api/connections/${connectionId}/tables/${tableName}/columns?database=${databaseName}`);
       if (!response.ok) {
         throw new Error('Failed to fetch table structure');
       }
