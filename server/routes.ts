@@ -636,12 +636,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (connection.type === 'postgresql') {
-        const client = createPostgreSQLClient(connection);
-        
-        // Use the specified database or fallback to connection database
-        if (database && database !== 'postgres') {
-          client.database = database;
-        }
+        // Create a new connection specifically for the target database
+        const client = createPostgreSQLClient({
+          ...connection,
+          database: database || connection.database
+        });
         
         await client.connect();
 
