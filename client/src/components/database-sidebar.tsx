@@ -814,44 +814,49 @@ function TableItem({
       }
     }, 100);
     
-    // 自动执行查询
-    try {
-      const { setIsExecuting, setQueryResults } = useDatabaseStore.getState();
-      setIsExecuting(true);
-      
-      const response = await fetch(`/api/connections/${connectionId}/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          query: queryContent, 
-          database: databaseName 
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('查询执行失败');
+    // 延迟执行查询，确保标签已激活
+    setTimeout(async () => {
+      try {
+        const { setIsExecuting, setQueryResults } = useDatabaseStore.getState();
+        setIsExecuting(true);
+        
+        const response = await fetch(`/api/connections/${connectionId}/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            query: queryContent, 
+            database: databaseName 
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Query failed:', errorData);
+          throw new Error(errorData.error || '查询执行失败');
+        }
+        
+        const result = await response.json();
+        setQueryResults(result);
+        
+        toast({
+          title: "查询执行成功",
+          description: `表 "${tableName}" 的数据已加载，共 ${result.rowCount} 条记录`,
+          duration: 3000,
+        });
+        
+      } catch (error) {
+        console.error('Query error:', error);
+        toast({
+          title: "查询失败",
+          description: error instanceof Error ? error.message : "执行查询时发生错误",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } finally {
+        const { setIsExecuting } = useDatabaseStore.getState();
+        setIsExecuting(false);
       }
-      
-      const result = await response.json();
-      setQueryResults(result);
-      
-      toast({
-        title: "查询执行成功",
-        description: `表 "${tableName}" 的数据已加载，共 ${result.rowCount} 条记录`,
-        duration: 3000,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "查询失败",
-        description: "执行查询时发生错误",
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      const { setIsExecuting } = useDatabaseStore.getState();
-      setIsExecuting(false);
-    }
+    }, 500);
   };
 
   const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {

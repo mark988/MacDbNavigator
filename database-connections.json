@@ -1710,8 +1710,88 @@
       "executionTime": 2273,
       "rowCount": 51,
       "createdAt": "2025-06-02T09:20:05.585Z"
+    },
+    {
+      "id": 213,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 929,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:41:24.405Z"
+    },
+    {
+      "id": 214,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 894,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:41:31.338Z"
+    },
+    {
+      "id": 215,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 896,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:41:36.553Z"
+    },
+    {
+      "id": 216,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 899,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:41:39.927Z"
+    },
+    {
+      "id": 217,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order",
+      "executionTime": 905,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:41:45.675Z"
+    },
+    {
+      "id": 218,
+      "connectionId": 4,
+      "query": "select * from t_order ",
+      "executionTime": 897,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T11:42:11.830Z"
+    },
+    {
+      "id": 219,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 900,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T11:42:16.948Z"
+    },
+    {
+      "id": 220,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 909,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T11:42:22.978Z"
+    },
+    {
+      "id": 221,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 894,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:42:30.178Z"
+    },
+    {
+      "id": 222,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 895,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:42:39.232Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 213
+  "nextHistoryId": 223
 }
