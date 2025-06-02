@@ -783,17 +783,47 @@ function TableItem({
     return activeTab?.databaseName || '';
   };
 
-  // 临时右键菜单处理函数 - 将在父组件中实现完整版本
-  const handleTableQuery = (tableName: string, connectionId: number, databaseName: string) => {
-    console.log('Query table:', tableName, connectionId, databaseName);
+  // 表格右键菜单处理函数
+  const handleTableQuery = async (tableName: string, connectionId: number, databaseName: string) => {
+    const queryContent = `SELECT * FROM ${tableName} LIMIT 100;`;
+    
+    // 创建新的查询标签
+    addTab({
+      title: `查询 - ${tableName}`,
+      type: 'query',
+      connectionId,
+      databaseName
+    });
+    
+    toast({
+      title: "查询标签已创建",
+      description: `已为表 "${tableName}" 创建查询标签`,
+      duration: 3000,
+    });
   };
 
   const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {
-    console.log('View structure:', tableName, connectionId, databaseName);
+    addTab({
+      title: `结构 - ${tableName}`,
+      type: 'table',
+      connectionId,
+      tableName,
+      databaseName
+    });
+    
+    toast({
+      title: "表结构标签已创建",
+      description: `已为表 "${tableName}" 创建结构查看标签`,
+      duration: 3000,
+    });
   };
 
   const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
-    console.log('Backup table:', tableName, connectionId, databaseName);
+    toast({
+      title: "备份功能",
+      description: `表 "${tableName}" 的备份功能正在开发中`,
+      duration: 3000,
+    });
   };
 
   return (
