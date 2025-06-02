@@ -306,6 +306,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await client.query(`SET search_path TO "${dbName}", public`);
           }
 
+          // First, find the correct schema for the table
+          const schemaQuery = await client.query(`
+            SELECT table_schema 
+            FROM information_schema.tables 
+            WHERE table_name = $1 
+            LIMIT 1
+          `, [tableName]);
+
+          let tableSchema = 'public';
+          if (schemaQuery.rows.length > 0) {
+            tableSchema = schemaQuery.rows[0].table_schema;
+          }
+
           const result = await client.query(`
             SELECT 
               column_name as name,
@@ -319,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             WHERE table_name = $1 
             AND table_schema = $2
             ORDER BY ordinal_position
-          `, [tableName, dbName || 'public']);
+          `, [tableName, tableSchema]);
 
           columns = result.rows.map(row => ({
             name: row.name,

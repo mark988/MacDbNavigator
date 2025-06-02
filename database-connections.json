@@ -1902,8 +1902,32 @@
       "executionTime": 1168,
       "rowCount": 51,
       "createdAt": "2025-06-02T11:58:03.484Z"
+    },
+    {
+      "id": 237,
+      "connectionId": 4,
+      "query": "SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = 't_order' AND table_schema = 'xiaoma' ORDER BY ordinal_position;",
+      "executionTime": 1140,
+      "rowCount": null,
+      "createdAt": "2025-06-02T12:04:08.291Z"
+    },
+    {
+      "id": 238,
+      "connectionId": 4,
+      "query": "SELECT table_schema, table_name FROM information_schema.tables WHERE table_name LIKE '%order%';",
+      "executionTime": 1142,
+      "rowCount": 1,
+      "createdAt": "2025-06-02T12:04:14.304Z"
+    },
+    {
+      "id": 239,
+      "connectionId": 4,
+      "query": "SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = 't_order' AND table_schema = 'public' ORDER BY ordinal_position;",
+      "executionTime": 1148,
+      "rowCount": 3,
+      "createdAt": "2025-06-02T12:04:20.909Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 237
+  "nextHistoryId": 240
 }
