@@ -215,7 +215,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           No data found
         </div>
       ) : (
-        <div className="flex-1 min-h-0 flex flex-col border-x border-gray-200 dark:border-gray-700">
+        <div className="border-x border-gray-200 dark:border-gray-700">
           {/* Fixed Header */}
           <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-500 flex-shrink-0">
             <div className="flex">
@@ -231,7 +231,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           </div>
           
           {/* Scrollable Body */}
-          <div className="overflow-auto" style={{height: '300px'}}>
+          <div className="overflow-auto" style={{height: '250px'}}>
             <div>
               {currentRows.map((row: any, index: number) => (
                 <div
