@@ -79,11 +79,11 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
         throw new Error('No active connection or table name');
       }
 
-      const response = await apiRequest({
-        method: 'POST',
-        url: `/api/connections/${activeConnectionId}/table/${tableName}/update`,
-        body: data,
-      });
+      const response = await apiRequest(
+        `/api/connections/${activeConnectionId}/table/${tableName}/update`,
+        'POST',
+        data
+      );
 
       return response;
     },
