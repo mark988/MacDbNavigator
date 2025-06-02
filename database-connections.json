@@ -2,7 +2,7 @@
   "connections": [
     {
       "id": 4,
-      "name": "嗷嗷",
+      "name": "测试PG数据库",
       "type": "postgresql",
       "host": "47.113.222.217",
       "port": 5432,
@@ -1982,8 +1982,24 @@
       "executionTime": 1143,
       "rowCount": null,
       "createdAt": "2025-06-02T13:09:36.247Z"
+    },
+    {
+      "id": 247,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 1149,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T14:13:55.160Z"
+    },
+    {
+      "id": 248,
+      "connectionId": 4,
+      "query": "select * from t_order",
+      "executionTime": 1151,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T14:14:47.532Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 247
+  "nextHistoryId": 249
 }
