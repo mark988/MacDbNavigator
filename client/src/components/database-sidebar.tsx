@@ -740,6 +740,7 @@ function DatabaseItem({
               key={table.name}
               tableName={table.name}
               connectionId={connectionId}
+              databaseName={dbName}
               isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
               onTableClick={onTableClick}
               onTableDoubleClick={onTableDoubleClick}
@@ -754,6 +755,7 @@ function DatabaseItem({
 interface TableItemProps {
   tableName: string;
   connectionId: number;
+  databaseName: string;
   isExpanded: boolean;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
@@ -762,6 +764,7 @@ interface TableItemProps {
 function TableItem({
   tableName,
   connectionId,
+  databaseName,
   isExpanded,
   onTableClick,
   onTableDoubleClick
@@ -909,14 +912,14 @@ function TableItem({
           <div className="space-y-1 mb-2">
             <div 
               className="flex items-center p-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded cursor-pointer"
-              onClick={() => handleTableQuery(tableName, connectionId, getCurrentDatabase())}
+              onClick={() => handleTableQuery(tableName, connectionId, databaseName)}
             >
               <Search className="w-3 h-3 mr-2" />
               查询
             </div>
             <div 
               className="flex items-center p-1 text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900 rounded cursor-pointer"
-              onClick={() => handleTableStructure(tableName, connectionId, getCurrentDatabase())}
+              onClick={() => handleTableStructure(tableName, connectionId, databaseName)}
             >
               <Database className="w-3 h-3 mr-2" />
               表结构
@@ -1021,6 +1024,7 @@ function OtherDatabaseItem({
                 key={table.name}
                 tableName={table.name}
                 connectionId={connectionId}
+                databaseName={dbName}
                 isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
                 onTableClick={onTableClick}
                 onTableDoubleClick={onTableDoubleClick}
