@@ -548,27 +548,26 @@ function OtherDatabaseItem({
 
   return (
     <div>
-      <Collapsible open={isExpanded} onOpenChange={() => onDatabaseClick(dbName, connectionId)}>
-        <CollapsibleTrigger asChild>
-          <DatabaseContextMenu
-            databaseName={dbName}
-            connectionId={connectionId}
-            onNewQuery={onDatabaseRightClick}
-            onBackup={(dbName, connectionId) => {
-              console.log(`Backup ${dbName} from connection ${connectionId}`);
-            }}
+      <Collapsible open={isExpanded}>
+        <DatabaseContextMenu
+          databaseName={dbName}
+          connectionId={connectionId}
+          onNewQuery={onDatabaseRightClick}
+          onBackup={(dbName, connectionId) => {
+            console.log(`Backup ${dbName} from connection ${connectionId}`);
+          }}
+        >
+          <div 
+            className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
+            onClick={() => onDatabaseClick(dbName, connectionId)}
           >
-            <div 
-              className="flex items-center p-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
-            >
-              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-                isExpanded ? 'rotate-90' : ''
-              }`} />
-              <Database className="w-4 h-4 mr-2" />
-              <span>{dbName}</span>
-            </div>
-          </DatabaseContextMenu>
-        </CollapsibleTrigger>
+            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+              isExpanded ? 'rotate-90' : ''
+            }`} />
+            <Database className="w-4 h-4 mr-2" />
+            <span>{dbName}</span>
+          </div>
+        </DatabaseContextMenu>
         
         <CollapsibleContent className="ml-6 space-y-1">
           {isLoading ? (
