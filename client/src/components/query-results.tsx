@@ -80,8 +80,8 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       }
 
       const response = await apiRequest(
-        `/api/connections/${activeConnectionId}/table/${tableName}/update`,
         'POST',
+        `/api/connections/${activeConnectionId}/table/${tableName}/update`,
         data
       );
 
