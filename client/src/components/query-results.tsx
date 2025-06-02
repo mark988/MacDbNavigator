@@ -113,13 +113,22 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
     });
 
     const activeTab = tabs.find(tab => tab.id === activeTabId);
-    updateMutation.mutate({
+    const requestData = {
       changes,
       originalData: currentRows,
       database: activeTab?.databaseName || null,
       schema: null,
       fullQuery: statement,
+    };
+    
+    console.log('Saving changes:', {
+      tableName,
+      activeConnectionId,
+      requestData,
+      pendingChangesSize: pendingChanges.size
     });
+    
+    updateMutation.mutate(requestData);
   };
 
   const discardChanges = () => {
