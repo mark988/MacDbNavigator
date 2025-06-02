@@ -622,6 +622,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alter table column endpoint
+  app.post('/api/connections/:id/table/:tableName/alter-column', async (req: Request, res: Response) => {
+    try {
+      const connectionId = parseInt(req.params.id);
+      const { tableName } = req.params;
+      const { columnName, changes, database } = req.body;
+
+      const connection = await storage.getConnection(connectionId);
+      if (!connection) {
+        return res.status(404).json({ error: 'Connection not found' });
+      }
+
+      if (connection.type === 'postgresql') {
+        const client = createPostgreSQLClient(connection);
+        
+        // Use the specified database or fallback to connection database
+        if (database && database !== 'postgres') {
+          client.database = database;
+        }
+        
+        await client.connect();
+
+        // Build ALTER TABLE statements based on changes
+        const alterStatements = [];
+        
+        if (changes.name && changes.name !== columnName) {
+          alterStatements.push(`ALTER TABLE "${tableName}" RENAME COLUMN "${columnName}" TO "${changes.name}"`);
+        }
+        
+        if (changes.type) {
+          const currentColumnName = changes.name || columnName;
+          alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
+        }
+        
+        if (changes.nullable !== undefined) {
+          const currentColumnName = changes.name || columnName;
+          if (changes.nullable) {
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
+          } else {
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
+          }
+        }
+        
+        if (changes.default !== undefined) {
+          const currentColumnName = changes.name || columnName;
+          if (changes.default === '' || changes.default === null) {
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
+          } else {
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
+          }
+        }
+
+        // Execute all ALTER statements
+        for (const statement of alterStatements) {
+          console.log('Executing:', statement);
+          await client.query(statement);
+        }
+
+        await client.end();
+        
+        res.json({ success: true, message: 'Column altered successfully' });
+      } else if (connection.type === 'mysql') {
+        // MySQL implementation can be added here if needed
+        res.status(400).json({ error: 'MySQL column alteration not implemented yet' });
+      } else {
+        res.status(400).json({ error: 'Unsupported database type' });
+      }
+    } catch (error: any) {
+      console.error('Alter column error:', error);
+      res.status(500).json({ error: error.message || 'Failed to alter column' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
