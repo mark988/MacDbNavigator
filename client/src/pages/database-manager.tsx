@@ -106,7 +106,6 @@ export default function DatabaseManager() {
                       />
                       <div className="flex flex-col flex-1 overflow-hidden">
                         <QueryResults />
-                        <QueryPagination />
                       </div>
                     </div>
                   ) : (
