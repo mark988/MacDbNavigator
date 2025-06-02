@@ -1571,8 +1571,32 @@
       "executionTime": 902,
       "rowCount": 51,
       "createdAt": "2025-06-02T06:59:10.925Z"
+    },
+    {
+      "id": 194,
+      "connectionId": 1,
+      "query": "SELECT\n    *\nFROM t_order",
+      "executionTime": 932,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T07:02:45.614Z"
+    },
+    {
+      "id": 195,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n\n\n\n\n\n\n",
+      "executionTime": 894,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T07:02:58.513Z"
+    },
+    {
+      "id": 196,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n\n\n",
+      "executionTime": 915,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T07:03:40.696Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 194
+  "nextHistoryId": 197
 }
