@@ -75,13 +75,16 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       schema: string | null;
       fullQuery: string;
     }) => {
-      if (!activeConnectionId || !tableName) {
-        throw new Error('No active connection or table name');
+      // Use the connection ID from the last query instead of activeConnectionId
+      const queryConnectionId = lastQuery?.connectionId || activeConnectionId;
+      
+      if (!queryConnectionId || !tableName) {
+        throw new Error('No connection ID or table name');
       }
 
       const response = await apiRequest(
         'POST',
-        `/api/connections/${activeConnectionId}/table/${tableName}/update`,
+        `/api/connections/${queryConnectionId}/table/${tableName}/update`,
         data
       );
 
