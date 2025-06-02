@@ -35,6 +35,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   const tableName = statement.match(/(?:from|into|update)\s+(\w+)/i)?.[1];
 
   const handleCellClick = (rowIndex: number, column: string, value: any) => {
+    console.log('Cell clicked:', { rowIndex, column, value, tableName });
     setEditingCell({ rowIndex, column });
     setEditingValue(value?.toString() || '');
   };
@@ -44,10 +45,19 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
       const cellKey = `${editingCell.rowIndex}-${editingCell.column}`;
       const originalValue = currentRows[editingCell.rowIndex][editingCell.column];
       
+      console.log('Cell blur:', { 
+        cellKey, 
+        editingValue, 
+        originalValue, 
+        isChanged: editingValue !== originalValue?.toString(),
+        tableName 
+      });
+      
       if (editingValue !== originalValue?.toString()) {
         const newChanges = new Map(pendingChanges);
         newChanges.set(cellKey, editingValue);
         setPendingChanges(newChanges);
+        console.log('Added to pending changes:', newChanges.size, 'changes total');
       }
     }
     setEditingCell(null);
