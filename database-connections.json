@@ -1,19 +1,6 @@
 {
   "connections": [
     {
-      "id": 1,
-      "name": "t1",
-      "type": "postgresql",
-      "host": "47.113.222.217",
-      "port": 5432,
-      "database": null,
-      "username": "postgres",
-      "password": "mark8355141",
-      "useSSL": false,
-      "isConnected": false,
-      "createdAt": "2025-06-01T11:00:52.360Z"
-    },
-    {
       "id": 2,
       "name": "test2",
       "type": "postgresql",

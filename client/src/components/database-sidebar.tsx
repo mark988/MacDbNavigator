@@ -152,6 +152,7 @@ export function DatabaseSidebar() {
       toast({
         title: "连接已删除",
         description: `连接 "${connection.name}" 已成功删除`,
+        duration: 3000,
       });
     } catch (error) {
       toast({
