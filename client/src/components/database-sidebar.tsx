@@ -143,15 +143,6 @@ export function DatabaseSidebar() {
     });
   };
 
-  const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
-    setBackupDialog({
-      open: true,
-      tableName,
-      connectionId,
-      databaseName
-    });
-  };
-
   const handleDeleteConnection = async (connectionId: number) => {
     const connection = connections.find(c => c.id === connectionId);
     if (!connection) return;
@@ -309,6 +300,15 @@ export function DatabaseSidebar() {
       title: "表结构标签已创建",
       description: `为表 "${tableName}" 创建了结构查看标签`,
       duration: 3000,
+    });
+  };
+
+  const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
+    setBackupDialog({
+      open: true,
+      tableName,
+      connectionId,
+      databaseName
     });
   };
 
