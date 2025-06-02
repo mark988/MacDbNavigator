@@ -17,7 +17,9 @@ import {
   Trash2,
   Edit2,
   Check,
-  X
+  X,
+  Search,
+  Download
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { DatabaseContextMenu } from './context-menu';
@@ -830,31 +832,48 @@ function TableItem({
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onTableClick(tableName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <TableContextMenu
-            tableName={tableName}
-            connectionId={connectionId}
-            databaseName={getCurrentDatabase()}
-            onQueryTable={handleTableQuery}
-            onViewStructure={handleTableStructure}
-            onBackupTable={handleTableBackup}
+          <div 
+            className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onTableDoubleClick(tableName, connectionId);
+            }}
           >
-            <div 
-              className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                onTableDoubleClick(tableName, connectionId);
-              }}
-            >
-              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-                isExpanded ? 'rotate-90' : ''
-              }`} />
-              <Table className="w-3 h-3 mr-2" />
-              <span>{tableName}</span>
-            </div>
-          </TableContextMenu>
+            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+              isExpanded ? 'rotate-90' : ''
+            }`} />
+            <Table className="w-3 h-3 mr-2" />
+            <span>{tableName}</span>
+          </div>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="ml-6 space-y-0.5">
+          {/* 表操作选项 */}
+          <div className="space-y-1 mb-2">
+            <div 
+              className="flex items-center p-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded cursor-pointer"
+              onClick={() => handleTableQuery(tableName, connectionId, getCurrentDatabase())}
+            >
+              <Search className="w-3 h-3 mr-2" />
+              查询
+            </div>
+            <div 
+              className="flex items-center p-1 text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900 rounded cursor-pointer"
+              onClick={() => handleTableStructure(tableName, connectionId, getCurrentDatabase())}
+            >
+              <Database className="w-3 h-3 mr-2" />
+              表结构
+            </div>
+            <div 
+              className="flex items-center p-1 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900 rounded cursor-pointer"
+              onClick={() => handleTableBackup(tableName, connectionId, getCurrentDatabase())}
+            >
+              <Download className="w-3 h-3 mr-2" />
+              备份
+            </div>
+          </div>
+          
+          {/* 表列信息 */}
           {isLoading ? (
             <div className="flex items-center p-1 text-xs text-gray-500">
               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
