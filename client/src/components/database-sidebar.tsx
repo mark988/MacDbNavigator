@@ -29,6 +29,8 @@ export function DatabaseSidebar() {
     setActiveConnection,
     setConnectionModalOpen,
     addTab,
+    removeTab,
+    tabs,
     queryHistory,
     setQueryHistory
   } = useDatabaseStore();
@@ -98,6 +100,12 @@ export function DatabaseSidebar() {
   const handleNewQuery = (dbName: string, connectionId: number) => {
     const connection = connections.find(c => c.id === connectionId);
     if (connection) {
+      // 查找并关闭原始的"Query Editor"标签
+      const queryEditorTab = tabs.find(tab => tab.title === "Query Editor");
+      if (queryEditorTab) {
+        removeTab(queryEditorTab.id);
+      }
+      
       addTab({
         title: `Query - ${dbName}`,
         type: 'query',
