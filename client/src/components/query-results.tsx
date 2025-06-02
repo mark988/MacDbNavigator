@@ -354,6 +354,62 @@ export function QueryResults() {
 
   // Handle multi-statement results
   if (queryResults.multiStatementResults && queryResults.multiStatementResults.length > 0) {
+    // Helper function to generate meaningful tab names
+    const getTabName = (statement: string, index: number) => {
+      const cleanStatement = statement.trim();
+      const firstLine = cleanStatement.split('\n')[0].trim();
+      
+      // Extract SQL operation type
+      const operation = firstLine.match(/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TRUNCATE)/i)?.[1]?.toUpperCase();
+      
+      if (operation === 'SELECT') {
+        // Try to extract table name for SELECT statements
+        const tableMatch = firstLine.match(/FROM\s+(\w+)/i);
+        if (tableMatch) {
+          return `查询 ${tableMatch[1]}`;
+        }
+        return `查询 ${index + 1}`;
+      } else if (operation === 'INSERT') {
+        const tableMatch = firstLine.match(/INTO\s+(\w+)/i);
+        if (tableMatch) {
+          return `插入 ${tableMatch[1]}`;
+        }
+        return `插入 ${index + 1}`;
+      } else if (operation === 'UPDATE') {
+        const tableMatch = firstLine.match(/UPDATE\s+(\w+)/i);
+        if (tableMatch) {
+          return `更新 ${tableMatch[1]}`;
+        }
+        return `更新 ${index + 1}`;
+      } else if (operation === 'DELETE') {
+        const tableMatch = firstLine.match(/FROM\s+(\w+)/i);
+        if (tableMatch) {
+          return `删除 ${tableMatch[1]}`;
+        }
+        return `删除 ${index + 1}`;
+      } else if (operation === 'CREATE') {
+        const tableMatch = firstLine.match(/CREATE\s+TABLE\s+(\w+)/i);
+        if (tableMatch) {
+          return `创建 ${tableMatch[1]}`;
+        }
+        return `创建 ${index + 1}`;
+      } else if (operation === 'DROP') {
+        const tableMatch = firstLine.match(/DROP\s+TABLE\s+(\w+)/i);
+        if (tableMatch) {
+          return `删除 ${tableMatch[1]}`;
+        }
+        return `删除 ${index + 1}`;
+      } else if (operation === 'ALTER') {
+        const tableMatch = firstLine.match(/ALTER\s+TABLE\s+(\w+)/i);
+        if (tableMatch) {
+          return `修改 ${tableMatch[1]}`;
+        }
+        return `修改 ${index + 1}`;
+      }
+      
+      return `语句 ${index + 1}`;
+    };
+
     return (
       <div className="flex flex-col flex-1 border-t border-gray-200 dark:border-gray-700">
         <Tabs defaultValue="statement-0" className="flex-1 flex flex-col">
@@ -362,9 +418,9 @@ export function QueryResults() {
               <TabsTrigger
                 key={index}
                 value={`statement-${index}`}
-                className="px-4 py-2 text-xs border-b-2 border-transparent data-[state=active]:border-blue-500 bg-transparent rounded-none"
+                className="px-4 py-2 text-xs border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:text-white bg-transparent rounded-none hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                Statement {index + 1} ({result.result.rowCount} rows)
+                {getTabName(result.statement, index)} ({result.result.rowCount} 行)
               </TabsTrigger>
             ))}
           </TabsList>

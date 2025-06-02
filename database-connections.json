@@ -1926,8 +1926,32 @@
       "executionTime": 1148,
       "rowCount": 3,
       "createdAt": "2025-06-02T12:04:20.909Z"
+    },
+    {
+      "id": 240,
+      "connectionId": 4,
+      "query": "select * from t_order ",
+      "executionTime": 1114,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T12:48:22.845Z"
+    },
+    {
+      "id": 241,
+      "connectionId": 4,
+      "query": "select * from t_order",
+      "executionTime": 1153,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T12:50:00.764Z"
+    },
+    {
+      "id": 242,
+      "connectionId": 4,
+      "query": "select * from t_product",
+      "executionTime": 1818,
+      "rowCount": null,
+      "createdAt": "2025-06-02T12:50:03.071Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 240
+  "nextHistoryId": 243
 }
