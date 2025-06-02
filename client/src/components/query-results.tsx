@@ -342,7 +342,7 @@ export function QueryPagination() {
   const totalPages = Math.ceil(queryResults.rows.length / ROWS_PER_PAGE);
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+    <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
       <div className="flex items-center space-x-2">
         <Button
           variant="outline"
