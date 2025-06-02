@@ -672,6 +672,7 @@ function ConnectionItem({
                   onDatabaseRightClick={onDatabaseRightClick}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
+                  onTableBackup={onTableBackup}
                 />
               ))}
             </>
@@ -967,6 +968,7 @@ interface OtherDatabaseItemProps {
   onDatabaseRightClick: (dbName: string, connectionId: number) => void;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
+  onTableBackup: (tableName: string, connectionId: number, databaseName: string) => void;
 }
 
 function OtherDatabaseItem({
@@ -977,7 +979,8 @@ function OtherDatabaseItem({
   onDatabaseClick,
   onDatabaseRightClick,
   onTableClick,
-  onTableDoubleClick
+  onTableDoubleClick,
+  onTableBackup
 }: OtherDatabaseItemProps) {
   const { data: tablesData, isLoading } = useQuery({
     queryKey: ['/api/connections', connectionId, 'databases', dbName, 'tables'],
@@ -1028,7 +1031,6 @@ function OtherDatabaseItem({
                 isExpanded={expandedTables.has(`${connectionId}-${table.name}`)}
                 onTableClick={onTableClick}
                 onTableDoubleClick={onTableDoubleClick}
-                onTableBackup={handleTableBackup}
               />
             ))
           ) : (
