@@ -216,13 +216,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             database: dbName,
           });
 
-          const [tablesResult] = await mysqlConnection.execute('SHOW TABLES');
+          const [tablesResult] = await mysqlConnection.promise().execute('SHOW TABLES');
           tables = (tablesResult as any[]).map(row => ({
             name: row[`Tables_in_${dbName}`],
             type: 'table' as const
           }));
 
-          await mysqlConnection.end();
+          mysqlConnection.end();
         } else if (connection.type === 'postgresql') {
           const client = new Client({
             host: connection.host,
