@@ -174,7 +174,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
                   size="sm"
                   onClick={saveChanges}
                   disabled={updateMutation.isPending}
-                  className="flex items-center text-xs py-1.5"
+                  className="flex items-center text-xs px-3 py-2"
                 >
                   <Save className="w-3 h-3 mr-1" />
                   Save ({pendingChanges.size})
@@ -183,7 +183,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
                   variant="outline"
                   size="sm"
                   onClick={discardChanges}
-                  className="flex items-center text-xs py-1.5"
+                  className="flex items-center text-xs px-3 py-2"
                 >
                   <X className="w-3 h-3 mr-1" />
                   Discard
@@ -196,7 +196,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
               variant="outline"
               size="sm"
               onClick={exportResults}
-              className="flex items-center text-xs py-1.5"
+              className="flex items-center text-xs px-3 py-2"
             >
               <Download className="w-3 h-3 mr-1" />
               Export CSV

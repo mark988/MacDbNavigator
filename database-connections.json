@@ -1267,8 +1267,24 @@
       "executionTime": 898,
       "rowCount": 51,
       "createdAt": "2025-06-02T04:06:14.413Z"
+    },
+    {
+      "id": 156,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "executionTime": 896,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T04:09:09.524Z"
+    },
+    {
+      "id": 157,
+      "connectionId": 2,
+      "query": "select * from t_order\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "executionTime": 896,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T04:09:23.813Z"
     }
   ],
   "nextConnectionId": 3,
-  "nextHistoryId": 156
+  "nextHistoryId": 158
 }
