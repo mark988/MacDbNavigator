@@ -568,8 +568,8 @@ function OtherDatabaseItem({
               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
               Loading tables...
             </div>
-          ) : (
-            tablesData?.tables?.map((table) => (
+          ) : tablesData?.tables && tablesData.tables.length > 0 ? (
+            tablesData.tables.map((table) => (
               <TableItem
                 key={table.name}
                 tableName={table.name}
@@ -579,6 +579,10 @@ function OtherDatabaseItem({
                 onTableDoubleClick={onTableDoubleClick}
               />
             ))
+          ) : (
+            <div className="flex items-center p-1 text-xs text-gray-500">
+              No tables found
+            </div>
           )}
         </CollapsibleContent>
       </Collapsible>
