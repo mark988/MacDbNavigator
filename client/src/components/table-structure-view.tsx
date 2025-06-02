@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit2, Save, X, Plus, Trash2 } from 'lucide-react';
+import { Edit2, Save, X, Plus, Trash2, Table as TableIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { TableColumn } from '@shared/schema';
@@ -277,7 +277,7 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="flex items-center text-lg">
-                <Table className="w-5 h-5 mr-2" />
+                <TableIcon className="w-5 h-5 mr-2" />
                 表结构: {tableName}
               </CardTitle>
               <div className="text-sm text-gray-600 dark:text-gray-400">

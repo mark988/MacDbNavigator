@@ -725,6 +725,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 新增表字段
+  app.post('/api/connections/:id/table/:tableName/add-column', async (req: Request, res: Response) => {
+    const connectionId = parseInt(req.params.id);
+    const tableName = req.params.tableName;
+    const { columnData, database } = req.body;
+
+    try {
+      const connection = await storage.getConnection(connectionId);
+      
+      if (!connection) {
+        return res.status(404).json({ error: '连接未找到' });
+      }
+
+      let client;
+      
+      if (connection.type === 'postgresql') {
+        client = createPostgreSQLClient({
+          ...connection,
+          database: database || connection.database
+        });
+        
+        await client.connect();
+
+        // 构建ADD COLUMN语句
+        let addColumnQuery = `ALTER TABLE ${tableName} ADD COLUMN ${columnData.name} ${columnData.type}`;
+        
+        if (!columnData.nullable) {
+          addColumnQuery += ' NOT NULL';
+        }
+        
+        if (columnData.default) {
+          addColumnQuery += ` DEFAULT '${columnData.default}'`;
+        }
+
+        await client.query(addColumnQuery);
+        await client.end();
+        
+        res.json({ success: true, message: '字段添加成功' });
+      } else {
+        res.status(400).json({ error: '暂不支持此数据库类型的字段添加' });
+      }
+    } catch (error: any) {
+      console.error('添加表字段错误:', error);
+      res.status(500).json({ 
+        error: error.message || '添加表字段失败',
+        details: error.toString()
+      });
+    }
+  });
+
+  // 删除表字段
+  app.delete('/api/connections/:id/table/:tableName/column/:columnName', async (req: Request, res: Response) => {
+    const connectionId = parseInt(req.params.id);
+    const tableName = req.params.tableName;
+    const columnName = req.params.columnName;
+    const { database } = req.body;
+
+    try {
+      const connection = await storage.getConnection(connectionId);
+      
+      if (!connection) {
+        return res.status(404).json({ error: '连接未找到' });
+      }
+
+      let client;
+      
+      if (connection.type === 'postgresql') {
+        client = createPostgreSQLClient({
+          ...connection,
+          database: database || connection.database
+        });
+        
+        await client.connect();
+
+        const dropColumnQuery = `ALTER TABLE ${tableName} DROP COLUMN ${columnName}`;
+        await client.query(dropColumnQuery);
+        await client.end();
+        
+        res.json({ success: true, message: '字段删除成功' });
+      } else {
+        res.status(400).json({ error: '暂不支持此数据库类型的字段删除' });
+      }
+    } catch (error: any) {
+      console.error('删除表字段错误:', error);
+      res.status(500).json({ 
+        error: error.message || '删除表字段失败',
+        details: error.toString()
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
