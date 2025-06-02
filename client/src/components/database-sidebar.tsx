@@ -775,7 +775,7 @@ function TableItem({
   const { data: tableStructure, isLoading } = useQuery({
     queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'],
     queryFn: async () => {
-      const res = await fetch(`/api/connections/${connectionId}/tables/${tableName}/columns`);
+      const res = await fetch(`/api/connections/${connectionId}/tables/${tableName}/columns?database=${databaseName}`);
       if (!res.ok) throw new Error('Failed to fetch table structure');
       return res.json() as Promise<TableStructure>;
     },
