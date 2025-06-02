@@ -645,9 +645,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await client.connect();
 
+        // First, find the actual schema of the table
+        const schemaQuery = `
+          SELECT schemaname 
+          FROM pg_tables 
+          WHERE tablename = $1
+        `;
+        const schemaResult = await client.query(schemaQuery, [tableName]);
+        
+        if (schemaResult.rows.length === 0) {
+          await client.end();
+          return res.status(404).json({ error: `Table ${tableName} not found` });
+        }
+        
+        const actualSchema = schemaResult.rows[0].schemaname;
+        console.log(`Found table ${tableName} in schema: ${actualSchema}`);
+
         // Build ALTER TABLE statements based on changes
         const alterStatements = [];
-        const fullTableName = `"public"."${tableName}"`;
+        const fullTableName = `"${actualSchema}"."${tableName}"`;
         
         if (changes.name && changes.name !== columnName) {
           alterStatements.push(`ALTER TABLE ${fullTableName} RENAME COLUMN "${columnName}" TO "${changes.name}"`);
