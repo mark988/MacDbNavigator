@@ -104,10 +104,8 @@ export default function DatabaseManager() {
                         connectionId={tab.connectionId}
                         databaseName={tab.databaseName}
                       />
-                      <div className="flex flex-col flex-1 min-h-0">
-                        <QueryResults />
-                        <QueryPagination />
-                      </div>
+                      <QueryResults />
+                      <QueryPagination />
                     </div>
                   ) : (
                     <div className="h-32 flex items-center justify-center">
