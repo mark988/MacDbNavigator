@@ -335,6 +335,8 @@ export function SQLEditor({
   const [syntaxErrors, setSyntaxErrors] = useState<string[]>([]);
   const [selectedText, setSelectedText] = useState<string>("");
   const [progress, setProgress] = useState(0);
+  const [originalContent, setOriginalContent] = useState<string>("");
+  const [isFormatted, setIsFormatted] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -602,12 +604,30 @@ export function SQLEditor({
   };
 
   const formatQuery = () => {
-    if (monacoEditorRef.current) {
-      monacoEditorRef.current.getAction("editor.action.formatDocument").run();
+    if (isFormatted) {
+      // Restore original content
+      const contentToRestore = originalContent || content;
+      if (monacoEditorRef.current) {
+        monacoEditorRef.current.setValue(contentToRestore);
+      } else {
+        updateTabContent(tabId, contentToRestore);
+      }
+      setIsFormatted(false);
+      toast({
+        title: "SQL Restored",
+        description: "Your SQL has been restored to original format",
+      });
     } else {
-      // Format SQL for our custom editor
-      const formattedSQL = formatSQL(content);
-      updateTabContent(tabId, formattedSQL);
+      // Store original content and format
+      setOriginalContent(content);
+      if (monacoEditorRef.current) {
+        monacoEditorRef.current.getAction("editor.action.formatDocument").run();
+      } else {
+        // Format SQL for our custom editor
+        const formattedSQL = formatSQL(content);
+        updateTabContent(tabId, formattedSQL);
+      }
+      setIsFormatted(true);
       toast({
         title: "SQL Formatted",
         description: "Your SQL has been formatted successfully",
@@ -659,7 +679,7 @@ export function SQLEditor({
               className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
             >
               <FileText className="w-4 h-4 mr-2" />
-              Format
+              {isFormatted ? "Restore" : "Format"}
             </Button>
 
             <Button
