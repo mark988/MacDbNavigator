@@ -6,6 +6,7 @@ import { DatabaseSidebar } from "@/components/database-sidebar";
 import { SQLEditor } from "@/components/sql-editor";
 import { QueryResults } from "@/components/query-results";
 import { ConnectionModal } from "@/components/connection-modal";
+import { TableStructureView } from "@/components/table-structure-view";
 import { useDatabaseStore } from "@/lib/database-store";
 import { QueryPagination } from "@/components/query-results";
 
@@ -111,13 +112,16 @@ export default function DatabaseManager() {
                         <QueryResults />
                       </div>
                     </div>
+                  ) : tab.type === "table" ? (
+                    <TableStructureView
+                      tableName={tab.tableName!}
+                      connectionId={tab.connectionId!}
+                      databaseName={tab.databaseName!}
+                    />
                   ) : (
                     <div className="h-32 flex items-center justify-center">
                       <div className="text-center text-gray-500 dark:text-gray-400">
-                        <p>Table view for {tab.tableName}</p>
-                        <p className="text-sm mt-1">
-                          Table browsing functionality coming soon
-                        </p>
+                        <p>Unknown tab type: {tab.type}</p>
                       </div>
                     </div>
                   )}
