@@ -1694,8 +1694,24 @@
       "executionTime": 901,
       "rowCount": 51,
       "createdAt": "2025-06-02T09:10:58.796Z"
+    },
+    {
+      "id": 211,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_product LIMIT 100;",
+      "executionTime": 897,
+      "rowCount": null,
+      "createdAt": "2025-06-02T09:19:58.069Z"
+    },
+    {
+      "id": 212,
+      "connectionId": 4,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 2273,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T09:20:05.585Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 211
+  "nextHistoryId": 213
 }

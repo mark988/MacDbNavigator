@@ -799,6 +799,21 @@ function TableItem({
     
     addTab(newTab);
     
+    // 延迟更新标签内容，确保标签已创建
+    setTimeout(() => {
+      const { tabs, activeTabId, updateTabContent } = useDatabaseStore.getState();
+      const currentTab = tabs.find(tab => 
+        tab.connectionId === connectionId && 
+        tab.databaseName === databaseName && 
+        tab.type === 'query' &&
+        tab.title.includes(tableName)
+      );
+      
+      if (currentTab) {
+        updateTabContent(currentTab.id, queryContent);
+      }
+    }, 100);
+    
     // 自动执行查询
     try {
       const { setIsExecuting, setQueryResults } = useDatabaseStore.getState();
