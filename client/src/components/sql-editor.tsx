@@ -1,66 +1,134 @@
-import { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Play, Square, Save, FileText, AlertTriangle } from 'lucide-react';
-import { useDatabaseStore } from '@/lib/database-store';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import type { QueryResult } from '@shared/schema';
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Play, Square, Save, FileText, AlertTriangle } from "lucide-react";
+import { useDatabaseStore } from "@/lib/database-store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import type { QueryResult } from "@shared/schema";
 
 // Monaco Editor will be loaded dynamically
 let monaco: any = null;
 
 // SQL Keywords for highlighting
 const SQL_KEYWORDS = [
-  'SELECT', 'FROM', 'WHERE', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER',
-  'ON', 'AND', 'OR', 'NOT', 'IN', 'EXISTS', 'BETWEEN', 'LIKE', 'IS',
-  'NULL', 'TRUE', 'FALSE', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET',
-  'DELETE', 'CREATE', 'TABLE', 'INDEX', 'VIEW', 'DROP', 'ALTER', 'ADD',
-  'COLUMN', 'PRIMARY', 'KEY', 'FOREIGN', 'REFERENCES', 'UNIQUE', 'CHECK',
-  'DEFAULT', 'AUTO_INCREMENT', 'ORDER', 'BY', 'ASC', 'DESC', 'GROUP',
-  'HAVING', 'LIMIT', 'OFFSET', 'UNION', 'ALL', 'DISTINCT', 'AS', 'CASE',
-  'WHEN', 'THEN', 'ELSE', 'END', 'IF', 'IFNULL', 'COALESCE', 'CAST',
-  'CONVERT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'SUBSTRING', 'CHAR_LENGTH',
-  'UPPER', 'LOWER', 'TRIM', 'CONCAT', 'NOW', 'CURRENT_DATE', 'CURRENT_TIME'
+  "SELECT",
+  "FROM",
+  "WHERE",
+  "JOIN",
+  "INNER",
+  "LEFT",
+  "RIGHT",
+  "OUTER",
+  "ON",
+  "AND",
+  "OR",
+  "NOT",
+  "IN",
+  "EXISTS",
+  "BETWEEN",
+  "LIKE",
+  "IS",
+  "NULL",
+  "TRUE",
+  "FALSE",
+  "INSERT",
+  "INTO",
+  "VALUES",
+  "UPDATE",
+  "SET",
+  "DELETE",
+  "CREATE",
+  "TABLE",
+  "INDEX",
+  "VIEW",
+  "DROP",
+  "ALTER",
+  "ADD",
+  "COLUMN",
+  "PRIMARY",
+  "KEY",
+  "FOREIGN",
+  "REFERENCES",
+  "UNIQUE",
+  "CHECK",
+  "DEFAULT",
+  "AUTO_INCREMENT",
+  "ORDER",
+  "BY",
+  "ASC",
+  "DESC",
+  "GROUP",
+  "HAVING",
+  "LIMIT",
+  "OFFSET",
+  "UNION",
+  "ALL",
+  "DISTINCT",
+  "AS",
+  "CASE",
+  "WHEN",
+  "THEN",
+  "ELSE",
+  "END",
+  "IF",
+  "IFNULL",
+  "COALESCE",
+  "CAST",
+  "CONVERT",
+  "COUNT",
+  "SUM",
+  "AVG",
+  "MIN",
+  "MAX",
+  "SUBSTRING",
+  "CHAR_LENGTH",
+  "UPPER",
+  "LOWER",
+  "TRIM",
+  "CONCAT",
+  "NOW",
+  "CURRENT_DATE",
+  "CURRENT_TIME",
 ];
 
 // Simple SQL token analysis for highlighting
 function analyzeSQL(sql: string) {
   const tokens = [];
-  const lines = sql.split('\n');
-  
+  const lines = sql.split("\n");
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
+
     // Check for comment starting with --
-    const commentIndex = line.indexOf('--');
-    
+    const commentIndex = line.indexOf("--");
+
     if (commentIndex !== -1) {
       // Split line into before and after comment
       const beforeComment = line.substring(0, commentIndex);
       const commentPart = line.substring(commentIndex);
-      
+
       // Process the part before comment normally
       if (beforeComment.trim()) {
         const beforeTokens = parseLineTokens(beforeComment);
         tokens.push(...beforeTokens);
       }
-      
+
       // Add the comment as a single token
-      tokens.push({ text: commentPart, type: 'comment' });
+      tokens.push({ text: commentPart, type: "comment" });
     } else {
       // No comment, process entire line normally
       const lineTokens = parseLineTokens(line);
       tokens.push(...lineTokens);
     }
-    
+
     // Add newline if not the last line
     if (i < lines.length - 1) {
-      tokens.push({ text: '\n', type: 'whitespace' });
+      tokens.push({ text: "\n", type: "whitespace" });
     }
   }
-  
+
   return tokens;
 }
 
@@ -68,145 +136,182 @@ function analyzeSQL(sql: string) {
 function parseLineTokens(text: string) {
   const tokens = [];
   const words = text.split(/(\s+|[(),;])/);
-  
+
   for (const word of words) {
     if (!word.trim()) {
-      tokens.push({ text: word, type: 'whitespace' });
+      tokens.push({ text: word, type: "whitespace" });
       continue;
     }
-    
+
     const upperWord = word.toUpperCase();
     if (SQL_KEYWORDS.includes(upperWord)) {
-      tokens.push({ text: word, type: 'keyword' });
+      tokens.push({ text: word, type: "keyword" });
     } else if (/^\d+(\.\d+)?$/.test(word)) {
-      tokens.push({ text: word, type: 'number' });
+      tokens.push({ text: word, type: "number" });
     } else if (/^'.*'$/.test(word) || /^".*"$/.test(word)) {
-      tokens.push({ text: word, type: 'string' });
+      tokens.push({ text: word, type: "string" });
     } else {
-      tokens.push({ text: word, type: 'text' });
+      tokens.push({ text: word, type: "text" });
     }
   }
-  
+
   return tokens;
 }
 
 // Create highlighted spans for display
-function createHighlightedContent(tokens: Array<{text: string, type: string}>) {
-  return tokens.map(token => {
-    switch (token.type) {
-      case 'keyword':
-        return `<span style="color: #2563eb; font-weight: 600;">${token.text.toUpperCase()}</span>`;
-      case 'number':
-        return `<span style="color: #9333ea;">${token.text}</span>`;
-      case 'string':
-        return `<span style="color: #16a34a;">${token.text}</span>`;
-      case 'comment':
-        return `<span style="color: #6b7280; font-style: italic;">${token.text}</span>`;
-      default:
-        return token.text;
-    }
-  }).join('');
+function createHighlightedContent(
+  tokens: Array<{ text: string; type: string }>,
+) {
+  return tokens
+    .map((token) => {
+      switch (token.type) {
+        case "keyword":
+          return `<span style="color: #2563eb; font-weight: 600;">${token.text.toUpperCase()}</span>`;
+        case "number":
+          return `<span style="color: #9333ea;">${token.text}</span>`;
+        case "string":
+          return `<span style="color: #16a34a;">${token.text}</span>`;
+        case "comment":
+          return `<span style="color: #6b7280; font-style: italic;">${token.text}</span>`;
+        default:
+          return token.text;
+      }
+    })
+    .join("");
 }
 
 // SQL Formatter function
 function formatSQL(sql: string): string {
   if (!sql.trim()) return sql;
-  
+
   // Remove extra whitespace and normalize
-  let formatted = sql.replace(/\s+/g, ' ').trim();
-  
+  let formatted = sql.replace(/\s+/g, " ").trim();
+
   // Add line breaks after major keywords
   const majorKeywords = [
-    'SELECT', 'FROM', 'WHERE', 'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 
-    'ORDER BY', 'GROUP BY', 'HAVING', 'UNION', 'INSERT INTO', 'UPDATE', 'DELETE FROM',
-    'CREATE TABLE', 'ALTER TABLE', 'DROP TABLE'
+    "SELECT",
+    "FROM",
+    "WHERE",
+    "JOIN",
+    "INNER JOIN",
+    "LEFT JOIN",
+    "RIGHT JOIN",
+    "ORDER BY",
+    "GROUP BY",
+    "HAVING",
+    "UNION",
+    "INSERT INTO",
+    "UPDATE",
+    "DELETE FROM",
+    "CREATE TABLE",
+    "ALTER TABLE",
+    "DROP TABLE",
   ];
-  
-  majorKeywords.forEach(keyword => {
-    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+
+  majorKeywords.forEach((keyword) => {
+    const regex = new RegExp(`\\b${keyword}\\b`, "gi");
     formatted = formatted.replace(regex, `\n${keyword.toUpperCase()}`);
   });
-  
+
   // Add indentation for certain clauses
-  const indentKeywords = ['AND', 'OR', 'ON'];
-  indentKeywords.forEach(keyword => {
-    const regex = new RegExp(`\\n(\\s*)\\b${keyword}\\b`, 'gi');
+  const indentKeywords = ["AND", "OR", "ON"];
+  indentKeywords.forEach((keyword) => {
+    const regex = new RegExp(`\\n(\\s*)\\b${keyword}\\b`, "gi");
     formatted = formatted.replace(regex, `\n    ${keyword.toUpperCase()}`);
   });
-  
+
   // Format SELECT columns (add line breaks after commas in SELECT)
-  formatted = formatted.replace(/SELECT\s+/gi, 'SELECT\n    ');
-  formatted = formatted.replace(/,\s*(?![^()]*\))/g, ',\n    ');
-  
+  formatted = formatted.replace(/SELECT\s+/gi, "SELECT\n    ");
+  formatted = formatted.replace(/,\s*(?![^()]*\))/g, ",\n    ");
+
   // Clean up extra line breaks and spaces
-  formatted = formatted.replace(/\n\s*\n/g, '\n');
-  formatted = formatted.replace(/^\n+/, '');
-  formatted = formatted.replace(/\n+$/, '');
-  
+  formatted = formatted.replace(/\n\s*\n/g, "\n");
+  formatted = formatted.replace(/^\n+/, "");
+  formatted = formatted.replace(/\n+$/, "");
+
   // Normalize indentation
-  const lines = formatted.split('\n');
-  const cleanedLines = lines.map(line => {
+  const lines = formatted.split("\n");
+  const cleanedLines = lines.map((line) => {
     const trimmed = line.trim();
     if (trimmed.match(/^(AND|OR|ON)\b/i)) {
-      return '    ' + trimmed;
-    } else if (trimmed.match(/^(SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|ORDER BY|GROUP BY|HAVING|UNION)/i)) {
+      return "    " + trimmed;
+    } else if (
+      trimmed.match(
+        /^(SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|ORDER BY|GROUP BY|HAVING|UNION)/i,
+      )
+    ) {
       return trimmed;
-    } else if (trimmed.length > 0 && !trimmed.match(/^(SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|ORDER BY|GROUP BY|HAVING|UNION|AND|OR|ON)/i)) {
-      return '    ' + trimmed;
+    } else if (
+      trimmed.length > 0 &&
+      !trimmed.match(
+        /^(SELECT|FROM|WHERE|JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|ORDER BY|GROUP BY|HAVING|UNION|AND|OR|ON)/i,
+      )
+    ) {
+      return "    " + trimmed;
     }
     return trimmed;
   });
-  
-  return cleanedLines.join('\n');
+
+  return cleanedLines.join("\n");
 }
 
 // SQL syntax validation function
 function validateSQL(sql: string): string[] {
   const errors: string[] = [];
   if (!sql.trim()) return errors;
-  
+
   // Remove comments before validation to avoid false positives
-  const lines = sql.split('\n');
+  const lines = sql.split("\n");
   const sqlWithoutComments = lines
-    .map(line => {
-      const commentIndex = line.indexOf('--');
+    .map((line) => {
+      const commentIndex = line.indexOf("--");
       return commentIndex !== -1 ? line.substring(0, commentIndex) : line;
     })
-    .join('\n')
+    .join("\n")
     .trim();
-  
+
   // If only comments remain, no validation errors
   if (!sqlWithoutComments) return errors;
-  
+
   const upperSQL = sqlWithoutComments.toUpperCase().trim();
-  
+
   // Basic syntax checks - only for non-comment content
-  if (!upperSQL.match(/^(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|SHOW|DESCRIBE|EXPLAIN)/)) {
-    errors.push('SQL statement should start with a valid command (SELECT, INSERT, UPDATE, etc.)');
+  if (
+    !upperSQL.match(
+      /^(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|SHOW|DESCRIBE|EXPLAIN)/,
+    )
+  ) {
+    errors.push(
+      "SQL statement should start with a valid command (SELECT, INSERT, UPDATE, etc.)",
+    );
   }
-  
+
   // Check for unclosed quotes (only in non-comment parts)
   const singleQuotes = (sqlWithoutComments.match(/'/g) || []).length;
   const doubleQuotes = (sqlWithoutComments.match(/"/g) || []).length;
   if (singleQuotes % 2 !== 0) {
-    errors.push('Unclosed single quote detected');
+    errors.push("Unclosed single quote detected");
   }
   if (doubleQuotes % 2 !== 0) {
-    errors.push('Unclosed double quote detected');
+    errors.push("Unclosed double quote detected");
   }
-  
+
   // Check for basic parentheses matching (only in non-comment parts)
   const openParens = (sqlWithoutComments.match(/\(/g) || []).length;
   const closeParens = (sqlWithoutComments.match(/\)/g) || []).length;
   if (openParens !== closeParens) {
-    errors.push('Mismatched parentheses');
+    errors.push("Mismatched parentheses");
   }
-  
+
   // Check for SELECT without FROM (with some exceptions)
-  if (upperSQL.startsWith('SELECT') && !upperSQL.includes('FROM') && !upperSQL.match(/SELECT\s+\d+|SELECT\s+NOW\(\)|SELECT\s+CURRENT_/)) {
-    errors.push('SELECT statement usually requires a FROM clause');
+  if (
+    upperSQL.startsWith("SELECT") &&
+    !upperSQL.includes("FROM") &&
+    !upperSQL.match(/SELECT\s+\d+|SELECT\s+NOW\(\)|SELECT\s+CURRENT_/)
+  ) {
+    errors.push("SELECT statement usually requires a FROM clause");
   }
-  
+
   return errors;
 }
 
@@ -217,38 +322,43 @@ interface SQLEditorProps {
   databaseName?: string;
 }
 
-export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEditorProps) {
+export function SQLEditor({
+  tabId,
+  content,
+  connectionId,
+  databaseName,
+}: SQLEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const monacoEditorRef = useRef<any>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [syntaxErrors, setSyntaxErrors] = useState<string[]>([]);
-  const [selectedText, setSelectedText] = useState<string>('');
+  const [selectedText, setSelectedText] = useState<string>("");
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { 
-    updateTabContent, 
-    setQueryResults, 
-    setIsExecuting, 
+  const {
+    updateTabContent,
+    setQueryResults,
+    setIsExecuting,
     isExecuting,
     isDarkMode,
     connections,
-    activeConnectionId
+    activeConnectionId,
   } = useDatabaseStore();
 
   const executeQueryMutation = useMutation({
     mutationFn: async (query: string) => {
       const connId = connectionId || activeConnectionId;
       if (!connId) {
-        throw new Error('No active connection selected');
+        throw new Error("No active connection selected");
       }
 
       // Start progress animation
       setProgress(0);
       const progressInterval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev) => {
           if (prev >= 90) return prev;
           return prev + Math.random() * 15;
         });
@@ -256,8 +366,8 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
 
       try {
         const response = await fetch(`/api/connections/${connId}/query`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query, database: databaseName }),
         });
 
@@ -266,7 +376,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || 'Query execution failed');
+          throw new Error(error.error || "Query execution failed");
         }
 
         return response.json() as Promise<QueryResult>;
@@ -284,12 +394,12 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       setProgress(100);
       setTimeout(() => setProgress(0), 1000);
       setQueryResults(data);
-      queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/query-history"] });
     },
     onError: (error: Error) => {
       setProgress(0);
       // Error will be shown in the results area instead of toast
-      console.error('Query execution failed:', error.message);
+      console.error("Query execution failed:", error.message);
     },
     onSettled: () => {
       setIsExecuting(false);
@@ -302,20 +412,20 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
 
       try {
         // Load Monaco Editor from CDN
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js';
+        const script = document.createElement("script");
+        script.src = "https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js";
         script.onload = () => {
-          (window as any).require.config({ 
-            paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } 
+          (window as any).require.config({
+            paths: { vs: "https://unpkg.com/monaco-editor@0.44.0/min/vs" },
           });
-          (window as any).require(['vs/editor/editor.main'], () => {
+          (window as any).require(["vs/editor/editor.main"], () => {
             monaco = (window as any).monaco;
             initializeEditor();
           });
         };
         document.head.appendChild(script);
       } catch (error) {
-        console.error('Failed to load Monaco Editor:', error);
+        console.error("Failed to load Monaco Editor:", error);
         // Fallback to simple textarea
         setIsEditorReady(true);
       }
@@ -325,31 +435,37 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       if (!monaco || !editorRef.current) return;
 
       // Define SQL language configuration
-      monaco.languages.register({ id: 'sql' });
-      monaco.languages.setMonarchTokensProvider('sql', {
+      monaco.languages.register({ id: "sql" });
+      monaco.languages.setMonarchTokensProvider("sql", {
         tokenizer: {
           root: [
-            [/\b(SELECT|FROM|WHERE|JOIN|INNER|LEFT|RIGHT|ON|GROUP BY|ORDER BY|HAVING|LIMIT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|INDEX|TABLE|DATABASE)\b/i, 'keyword'],
-            [/\b(INT|VARCHAR|TEXT|DATE|DATETIME|BOOLEAN|DECIMAL|FLOAT|DOUBLE)\b/i, 'type'],
-            [/'([^'\\]|\\.)*'/, 'string'],
-            [/--.*/, 'comment'],
-            [/\/\*[\s\S]*?\*\//, 'comment'],
-            [/\b\d+\.?\d*\b/, 'number'],
-          ]
-        }
+            [
+              /\b(SELECT|FROM|WHERE|JOIN|INNER|LEFT|RIGHT|ON|GROUP BY|ORDER BY|HAVING|LIMIT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|INDEX|TABLE|DATABASE)\b/i,
+              "keyword",
+            ],
+            [
+              /\b(INT|VARCHAR|TEXT|DATE|DATETIME|BOOLEAN|DECIMAL|FLOAT|DOUBLE)\b/i,
+              "type",
+            ],
+            [/'([^'\\]|\\.)*'/, "string"],
+            [/--.*/, "comment"],
+            [/\/\*[\s\S]*?\*\//, "comment"],
+            [/\b\d+\.?\d*\b/, "number"],
+          ],
+        },
       });
 
       monacoEditorRef.current = monaco.editor.create(editorRef.current, {
         value: content,
-        language: 'sql',
-        theme: isDarkMode ? 'vs-dark' : 'vs',
+        language: "sql",
+        theme: isDarkMode ? "vs-dark" : "vs",
         automaticLayout: true,
         minimap: { enabled: false },
-        lineNumbers: 'on',
+        lineNumbers: "on",
         scrollBeyondLastLine: false,
-        wordWrap: 'on',
+        wordWrap: "on",
         fontSize: 14,
-        fontFamily: 'SF Mono, Monaco, monospace',
+        fontFamily: "SF Mono, Monaco, monospace",
       });
 
       monacoEditorRef.current.onDidChangeModelContent(() => {
@@ -360,7 +476,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       // Add keyboard shortcuts
       monacoEditorRef.current.addCommand(
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-        () => executeQuery()
+        () => executeQuery(),
       );
 
       setIsEditorReady(true);
@@ -377,17 +493,19 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
 
   useEffect(() => {
     if (monacoEditorRef.current && isEditorReady) {
-      monaco.editor.setTheme(isDarkMode ? 'vs-dark' : 'vs');
+      monaco.editor.setTheme(isDarkMode ? "vs-dark" : "vs");
     }
   }, [isDarkMode, isEditorReady]);
 
   const executeQuery = () => {
     let queryToExecute = content;
-    
+
     if (monacoEditorRef.current) {
       const selection = monacoEditorRef.current.getSelection();
-      const selectedText = monacoEditorRef.current.getModel().getValueInRange(selection);
-      
+      const selectedText = monacoEditorRef.current
+        .getModel()
+        .getValueInRange(selection);
+
       if (selectedText.trim()) {
         queryToExecute = selectedText;
       } else {
@@ -412,13 +530,13 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
     }
 
     // If no specific selection, check if there are multiple statements separated by semicolons
-    if (!selectedText.trim() && queryToExecute.includes(';')) {
+    if (!selectedText.trim() && queryToExecute.includes(";")) {
       // Split by semicolon and execute each statement
       const statements = queryToExecute
-        .split(';')
-        .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0);
-      
+        .split(";")
+        .map((stmt) => stmt.trim())
+        .filter((stmt) => stmt.length > 0);
+
       if (statements.length > 1) {
         // Execute multiple statements sequentially
         executeMultipleStatements(statements);
@@ -432,23 +550,24 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
   const executeMultipleStatements = async (statements: string[]) => {
     setIsExecuting(true);
     const results = [];
-    
+
     try {
       for (let i = 0; i < statements.length; i++) {
         const statement = statements[i];
-        
+
         toast({
           title: `Executing statement ${i + 1} of ${statements.length}`,
-          description: statement.substring(0, 50) + (statement.length > 50 ? '...' : ''),
+          description:
+            statement.substring(0, 50) + (statement.length > 50 ? "..." : ""),
         });
 
         const response = await apiRequest(
-          'POST',
+          "POST",
           `/api/connections/${connectionId}/query`,
           {
             query: statement,
-            database: databaseName
-          }
+            database: databaseName,
+          },
         );
 
         if (!response.ok) {
@@ -460,24 +579,23 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
         results.push({
           statement: statement,
           result: result,
-          index: i + 1
+          index: i + 1,
         });
       }
 
       // Set results in a special multi-statement format
       setQueryResults({
-        columns: ['Multi-Statement Results'],
+        columns: ["Multi-Statement Results"],
         rows: [],
         rowCount: 0,
         executionTime: 0,
-        multiStatementResults: results // Add this custom property
+        multiStatementResults: results, // Add this custom property
       });
 
       // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/query-history'] });
-
+      queryClient.invalidateQueries({ queryKey: ["/api/query-history"] });
     } catch (error: any) {
-      console.error('Multi-statement execution failed:', error.message);
+      console.error("Multi-statement execution failed:", error.message);
     } finally {
       setIsExecuting(false);
     }
@@ -485,7 +603,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
 
   const formatQuery = () => {
     if (monacoEditorRef.current) {
-      monacoEditorRef.current.getAction('editor.action.formatDocument').run();
+      monacoEditorRef.current.getAction("editor.action.formatDocument").run();
     } else {
       // Format SQL for our custom editor
       const formattedSQL = formatSQL(content);
@@ -505,7 +623,9 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
     });
   };
 
-  const activeConnection = connections.find(c => c.id === (connectionId || activeConnectionId));
+  const activeConnection = connections.find(
+    (c) => c.id === (connectionId || activeConnectionId),
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -523,11 +643,15 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
               ) : (
                 <Play className="w-4 h-4 mr-2" />
               )}
-              {isExecuting ? 'Stop' : selectedText.trim() ? 'Run Selection' : 'Run Query'}
+              {isExecuting
+                ? "Stop"
+                : selectedText.trim()
+                  ? "Run Selection"
+                  : "Run Query"}
             </Button>
-            
+
             <div className="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
-            
+
             <Button
               variant="ghost"
               onClick={formatQuery}
@@ -537,7 +661,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
               <FileText className="w-4 h-4 mr-2" />
               Format
             </Button>
-            
+
             <Button
               variant="ghost"
               onClick={saveQuery}
@@ -547,7 +671,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
               Save
             </Button>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {activeConnection ? (
@@ -558,11 +682,15 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
             </div>
             {activeConnection && (
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  activeConnection.isConnected ? 'bg-green-400' : 'bg-gray-400'
-                }`}></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    activeConnection.isConnected
+                      ? "bg-green-400"
+                      : "bg-gray-400"
+                  }`}
+                ></div>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {activeConnection.isConnected ? 'Connected' : 'Disconnected'}
+                  {activeConnection.isConnected ? "Connected" : "Disconnected"}
                 </span>
               </div>
             )}
@@ -586,36 +714,39 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
       )}
 
       {/* SQL Editor */}
-      <div className="h-16 bg-white dark:bg-gray-900 px-2 pt-1 pb-0 mb-0">
+      <div className="h-18 bg-white dark:bg-gray-900 px-2 pt-1 pb-1">
         <div className="h-full bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
           {!monaco || !isEditorReady ? (
             // SQL Editor with direct highlighting and line numbers
             <div className="w-full h-full flex overflow-hidden">
               {/* Line numbers */}
               <div className="bg-gray-100 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 px-1 py-1 font-mono text-sm text-gray-500 dark:text-gray-400 select-none min-w-[3rem] text-right">
-                {(content || '').split('\n').map((_, index) => (
-                  <div key={index} style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                {(content || "").split("\n").map((_, index) => (
+                  <div
+                    key={index}
+                    style={{ fontSize: "14px", lineHeight: "1.5" }}
+                  >
                     {index + 1}
                   </div>
                 ))}
               </div>
-              
+
               {/* Editor area */}
               <div className="flex-1 relative overflow-hidden">
                 {/* Highlighted text layer (background) */}
-                <div 
+                <div
                   className="absolute inset-0 p-1 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
-                  style={{ 
-                    fontSize: '14px', 
-                    lineHeight: '1.5',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word'
+                  style={{
+                    fontSize: "14px",
+                    lineHeight: "1.5",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
                   }}
                   dangerouslySetInnerHTML={{
-                    __html: createHighlightedContent(analyzeSQL(content || ''))
+                    __html: createHighlightedContent(analyzeSQL(content || "")),
                   }}
                 />
-                
+
                 {/* Transparent textarea (foreground) */}
                 <textarea
                   ref={textareaRef}
@@ -629,41 +760,50 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
                   }}
                   onSelect={(e) => {
                     const target = e.target as HTMLTextAreaElement;
-                    const selected = target.value.substring(target.selectionStart, target.selectionEnd);
+                    const selected = target.value.substring(
+                      target.selectionStart,
+                      target.selectionEnd,
+                    );
                     setSelectedText(selected);
                   }}
                   onMouseUp={(e) => {
                     const target = e.target as HTMLTextAreaElement;
-                    const selected = target.value.substring(target.selectionStart, target.selectionEnd);
+                    const selected = target.value.substring(
+                      target.selectionStart,
+                      target.selectionEnd,
+                    );
                     setSelectedText(selected);
                   }}
                   onKeyUp={(e) => {
                     const target = e.target as HTMLTextAreaElement;
-                    const selected = target.value.substring(target.selectionStart, target.selectionEnd);
+                    const selected = target.value.substring(
+                      target.selectionStart,
+                      target.selectionEnd,
+                    );
                     setSelectedText(selected);
                   }}
                   className="w-full h-full p-1 font-mono text-sm bg-transparent resize-none outline-none border-none relative z-10"
                   placeholder="Enter your SQL query here..."
-                  style={{ 
-                    fontSize: '14px', 
-                    lineHeight: '1.5',
-                    color: 'transparent',
-                    caretColor: '#374151',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word'
+                  style={{
+                    fontSize: "14px",
+                    lineHeight: "1.5",
+                    color: "transparent",
+                    caretColor: "#374151",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
                   }}
                   spellCheck={false}
                 />
-                
+
                 {/* Cursor visibility helper */}
-                <div 
+                <div
                   className="absolute inset-0 p-1 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden opacity-0"
-                  style={{ 
-                    fontSize: '14px', 
-                    lineHeight: '1.5',
-                    color: '#374151',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word'
+                  style={{
+                    fontSize: "14px",
+                    lineHeight: "1.5",
+                    color: "#374151",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
                   }}
                 >
                   {content}
@@ -674,7 +814,7 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
             <div ref={editorRef} className="w-full h-full" />
           )}
         </div>
-        
+
         {/* Syntax Error Panel */}
         {syntaxErrors.length > 0 && (
           <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -686,7 +826,10 @@ export function SQLEditor({ tabId, content, connectionId, databaseName }: SQLEdi
             </div>
             <ul className="space-y-1">
               {syntaxErrors.map((error, index) => (
-                <li key={index} className="text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
+                <li
+                  key={index}
+                  className="text-sm text-red-700 dark:text-red-300 flex items-start gap-2"
+                >
                   <span className="text-red-400 mt-0.5">•</span>
                   <span>{error}</span>
                 </li>
