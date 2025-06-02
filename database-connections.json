@@ -1950,8 +1950,24 @@
       "executionTime": 1818,
       "rowCount": null,
       "createdAt": "2025-06-02T12:50:03.071Z"
+    },
+    {
+      "id": 243,
+      "connectionId": 4,
+      "query": "select * from t_order",
+      "executionTime": 1135,
+      "rowCount": 51,
+      "createdAt": "2025-06-02T12:56:49.104Z"
+    },
+    {
+      "id": 244,
+      "connectionId": 4,
+      "query": "select * from t_product",
+      "executionTime": 1138,
+      "rowCount": null,
+      "createdAt": "2025-06-02T12:56:50.683Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 243
+  "nextHistoryId": 245
 }
