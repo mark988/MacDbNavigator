@@ -926,7 +926,7 @@ function TableItem({
             </div>
             <div 
               className="flex items-center p-1 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900 rounded cursor-pointer"
-              onClick={() => handleTableBackup(tableName, connectionId, getCurrentDatabase())}
+              onClick={() => handleTableBackup(tableName, connectionId, databaseName)}
             >
               <Download className="w-3 h-3 mr-2" />
               备份
