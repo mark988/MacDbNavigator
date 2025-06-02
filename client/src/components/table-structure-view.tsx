@@ -22,6 +22,32 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // PostgreSQL常用数据类型列表
+  const postgresqlDataTypes = [
+    'integer',
+    'bigint',
+    'smallint',
+    'numeric',
+    'decimal',
+    'real',
+    'double precision',
+    'character varying',
+    'varchar',
+    'character',
+    'char',
+    'text',
+    'boolean',
+    'date',
+    'time',
+    'timestamp',
+    'timestamptz',
+    'interval',
+    'uuid',
+    'json',
+    'jsonb',
+    'bytea'
+  ];
+
   const { data: tableStructure, isLoading } = useQuery({
     queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns', databaseName],
     queryFn: async () => {
@@ -154,11 +180,18 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
                   </TableCell>
                   <TableCell>
                     {editingColumn === column.name ? (
-                      <Input
+                      <select
                         value={editingValues.type || ''}
                         onChange={(e) => setEditingValues({ ...editingValues, type: e.target.value })}
-                        className="w-32"
-                      />
+                        className="px-2 py-1 border rounded w-40 text-sm"
+                      >
+                        <option value="">选择数据类型</option>
+                        {postgresqlDataTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <Badge variant="outline">{column.type}</Badge>
                     )}
