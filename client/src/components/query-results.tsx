@@ -97,14 +97,18 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   const saveChanges = () => {
     if (pendingChanges.size === 0 || !tableName) return;
 
-    const changes = Array.from(pendingChanges.entries()).map(([cellKey, value]) => {
+    const changes = Array.from(pendingChanges.entries()).map(([cellKey, newValue]) => {
       const [rowIndexStr, column] = cellKey.split('-');
       const rowIndex = parseInt(rowIndexStr);
       const originalRow = currentRows[rowIndex];
+      const oldValue = originalRow[column];
       
       return {
+        rowIndex,
+        column,
+        newValue,
+        oldValue,
         id: originalRow.id?.toString() || '',
-        [column]: value,
       };
     });
 
