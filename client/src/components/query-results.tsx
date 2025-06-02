@@ -196,7 +196,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
               variant="outline"
               size="sm"
               onClick={exportResults}
-              className="flex items-center text-xs px-3 py-1"
+              className="flex items-center text-xs px-3 py-2 h-auto"
             >
               <Download className="w-3 h-3 mr-1" />
               Export CSV
