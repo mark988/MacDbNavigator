@@ -12,7 +12,8 @@ import {
   Sun,
   Circle,
   Loader2,
-  Columns
+  Columns,
+  Trash2
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { DatabaseContextMenu } from './context-menu';
@@ -126,6 +127,42 @@ export function DatabaseSidebar() {
     });
   };
 
+  const handleDeleteConnection = async (connectionId: number) => {
+    const connection = connections.find(c => c.id === connectionId);
+    if (!connection) return;
+
+    if (confirm(`确定要删除连接 "${connection.name}" 吗？此操作无法撤销。`)) {
+      try {
+        const response = await fetch(`/api/connections/${connectionId}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error('删除连接失败');
+        }
+        
+        // 如果删除的是当前活动连接，清除活动状态
+        if (activeConnectionId === connectionId) {
+          setActiveConnection(null);
+        }
+        
+        // 刷新连接列表
+        refetchConnections();
+        
+        toast({
+          title: "连接已删除",
+          description: `连接 "${connection.name}" 已成功删除`,
+        });
+      } catch (error) {
+        toast({
+          title: "删除失败",
+          description: "删除连接时发生错误",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
     handleNewQuery(dbName, connectionId);
   };
@@ -227,6 +264,7 @@ export function DatabaseSidebar() {
                 onDatabaseRightClick={handleDatabaseRightClick}
                 onTableClick={handleTableClick}
                 onTableDoubleClick={handleTableDoubleClick}
+                onDeleteConnection={handleDeleteConnection}
                 getConnectionStatus={getConnectionStatus}
               />
             ))}
@@ -271,6 +309,7 @@ interface ConnectionItemProps {
   onDatabaseRightClick: (dbName: string, connectionId: number) => void;
   onTableClick: (tableName: string, connectionId: number) => void;
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
+  onDeleteConnection: (connectionId: number) => void;
   getConnectionStatus: (connection: Connection) => React.ReactNode;
 }
 
@@ -285,6 +324,7 @@ function ConnectionItem({
   onDatabaseRightClick,
   onTableClick, 
   onTableDoubleClick,
+  onDeleteConnection,
   getConnectionStatus 
 }: ConnectionItemProps) {
   const { data: databaseInfo, isLoading } = useQuery({
@@ -316,19 +356,33 @@ function ConnectionItem({
               {connection.name}
             </span>
           </div>
-          <CollapsibleTrigger asChild>
+          
+          <div className="flex items-center space-x-1">
             <button 
-              className="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded"
+              className="p-1 hover:bg-red-500 hover:text-white rounded opacity-0 group-hover:opacity-100 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
-                onToggle();
+                onDeleteConnection(connection.id);
               }}
+              title="删除连接"
             >
-              <ChevronRight className={`w-4 h-4 transition-transform ${
-                isExpanded ? 'rotate-90' : ''
-              }`} />
+              <Trash2 className="w-3 h-3" />
             </button>
-          </CollapsibleTrigger>
+            
+            <CollapsibleTrigger asChild>
+              <button 
+                className="p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+              >
+                <ChevronRight className={`w-4 h-4 transition-transform ${
+                  isExpanded ? 'rotate-90' : ''
+                }`} />
+              </button>
+            </CollapsibleTrigger>
+          </div>
         </div>
         
         <CollapsibleContent className="ml-4 mt-1 space-y-1">
