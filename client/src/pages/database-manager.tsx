@@ -97,7 +97,7 @@ export default function DatabaseManager() {
                 <TabsContent
                   key={tab.id}
                   value={tab.id}
-                  className="flex flex-col h-full overflow-hidden m-0 p-0"
+                  className="flex flex-col  overflow-hidden m-0 p-0"
                 >
                   {tab.type === "query" ? (
                     <div className="flex flex-col h-full">

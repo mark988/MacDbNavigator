@@ -734,8 +734,8 @@ export function SQLEditor({
       )}
 
       {/* SQL Editor */}
-      <div className="h-18 bg-white dark:bg-gray-900 px-2 pt-1 pb-1">
-        <div className="h-full bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 px-2 pt-1 pb-1" style={{ height: 'calc(9 * 1.5em + 2rem)' }}>
+        <div className="h-full bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
           {!monaco || !isEditorReady ? (
             // SQL Editor with direct highlighting and line numbers
             <div className="w-full h-full flex overflow-hidden">
