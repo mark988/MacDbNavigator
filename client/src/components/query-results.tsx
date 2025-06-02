@@ -192,15 +192,13 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
               </>
             )}
             
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={exportResults}
-              className="flex items-center text-xs px-3 py-2 h-auto"
+              className="flex items-center text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <Download className="w-3 h-3 mr-1" />
               Export CSV
-            </Button>
+            </button>
           </div>
         </div>
       </div>
