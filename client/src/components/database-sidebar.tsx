@@ -84,14 +84,22 @@ export function DatabaseSidebar() {
 
   const handleDatabaseClick = (dbName: string, connectionId: number) => {
     const key = `${connectionId}-${dbName}`;
+    console.log('Database clicked:', dbName, 'connectionId:', connectionId, 'key:', key);
+    console.log('Current expandedDatabases:', Array.from(expandedDatabases));
+    
     if (expandedDatabases.has(key)) {
       setExpandedDatabases(prev => {
         const newSet = new Set(Array.from(prev));
         newSet.delete(key);
+        console.log('Collapsing database, new set:', Array.from(newSet));
         return newSet;
       });
     } else {
-      setExpandedDatabases(prev => new Set([...Array.from(prev), key]));
+      setExpandedDatabases(prev => {
+        const newSet = new Set([...Array.from(prev), key]);
+        console.log('Expanding database, new set:', Array.from(newSet));
+        return newSet;
+      });
     }
   };
 
