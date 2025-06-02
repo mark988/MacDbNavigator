@@ -645,50 +645,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await client.connect();
 
-        // First, find the actual schema of the table
-        const schemaQuery = `
-          SELECT schemaname 
-          FROM pg_tables 
-          WHERE tablename = $1
-        `;
-        const schemaResult = await client.query(schemaQuery, [tableName]);
-        
-        if (schemaResult.rows.length === 0) {
-          await client.end();
-          return res.status(404).json({ error: `Table ${tableName} not found` });
+        // Set search_path to include the target database schema
+        if (database && database !== 'postgres') {
+          await client.query(`SET search_path TO "${database}", public`);
         }
-        
-        const actualSchema = schemaResult.rows[0].schemaname;
-        console.log(`Found table ${tableName} in schema: ${actualSchema}`);
 
         // Build ALTER TABLE statements based on changes
+        // Use simple table name since we set the search_path
         const alterStatements = [];
-        const fullTableName = `"${actualSchema}"."${tableName}"`;
         
         if (changes.name && changes.name !== columnName) {
-          alterStatements.push(`ALTER TABLE ${fullTableName} RENAME COLUMN "${columnName}" TO "${changes.name}"`);
+          alterStatements.push(`ALTER TABLE "${tableName}" RENAME COLUMN "${columnName}" TO "${changes.name}"`);
         }
         
         if (changes.type) {
           const currentColumnName = changes.name || columnName;
-          alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
+          alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
         }
         
         if (changes.nullable !== undefined) {
           const currentColumnName = changes.name || columnName;
           if (changes.nullable) {
-            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
           } else {
-            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET NOT NULL`);
           }
         }
         
         if (changes.default !== undefined) {
           const currentColumnName = changes.name || columnName;
           if (changes.default === '' || changes.default === null) {
-            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
           } else {
-            alterStatements.push(`ALTER TABLE ${fullTableName} ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
+            alterStatements.push(`ALTER TABLE "${tableName}" ALTER COLUMN "${currentColumnName}" SET DEFAULT '${changes.default}'`);
           }
         }
 
