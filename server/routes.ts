@@ -260,6 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const tableName = req.params.tableName;
+      const dbName = req.query.database as string;
       const connection = await storage.getConnection(id);
       
       if (!connection) {
@@ -275,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: dbName || connection.database || undefined,
           });
 
           const [result] = await mysqlConnection.execute(`DESCRIBE ${tableName}`);
@@ -295,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             port: connection.port,
             user: connection.username,
             password: connection.password,
-            database: connection.database,
+            database: dbName || connection.database || undefined,
             ssl: connection.useSSL ? { rejectUnauthorized: false } : false,
           });
           await client.connect();

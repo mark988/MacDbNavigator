@@ -232,21 +232,57 @@ export function DatabaseSidebar() {
     handleNewQuery(dbName, connectionId);
   };
 
-  const handleTableQuery = (tableName: string, connectionId: number, databaseName: string) => {
-    const queryContent = `SELECT * FROM ${tableName}`;
+  const handleTableQuery = async (tableName: string, connectionId: number, databaseName: string) => {
+    const queryContent = `SELECT * FROM ${tableName} LIMIT 100;`;
     
-    addTab({
-      title: `Query - ${tableName}`,
-      type: 'query',
+    // 创建新的查询标签
+    const newTab = {
+      title: `查询 - ${tableName}`,
+      type: 'query' as const,
       connectionId,
       databaseName
-    });
+    };
     
-    toast({
-      title: "新查询标签已创建",
-      description: `为表 "${tableName}" 创建了查询标签`,
-      duration: 3000,
-    });
+    addTab(newTab);
+    
+    // 自动执行查询
+    try {
+      const { setIsExecuting, setQueryResults } = useDatabaseStore.getState();
+      setIsExecuting(true);
+      
+      const response = await fetch(`/api/connections/${connectionId}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          query: queryContent, 
+          database: databaseName 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('查询执行失败');
+      }
+      
+      const result = await response.json();
+      setQueryResults(result);
+      
+      toast({
+        title: "查询执行成功",
+        description: `表 "${tableName}" 的数据已加载`,
+        duration: 3000,
+      });
+      
+    } catch (error) {
+      toast({
+        title: "查询失败",
+        description: "执行查询时发生错误",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      const { setIsExecuting } = useDatabaseStore.getState();
+      setIsExecuting(false);
+    }
   };
 
   const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {
@@ -728,7 +764,8 @@ function TableItem({
   onTableClick,
   onTableDoubleClick
 }: TableItemProps) {
-  const { activeTabId, tabs } = useDatabaseStore();
+  const { activeTabId, tabs, addTab } = useDatabaseStore();
+  const { toast } = useToast();
   
   const { data: tableStructure, isLoading } = useQuery({
     queryKey: ['/api/connections', connectionId, 'tables', tableName, 'columns'],
@@ -746,27 +783,45 @@ function TableItem({
     return activeTab?.databaseName || '';
   };
 
+  // 临时右键菜单处理函数 - 将在父组件中实现完整版本
+  const handleTableQuery = (tableName: string, connectionId: number, databaseName: string) => {
+    console.log('Query table:', tableName, connectionId, databaseName);
+  };
+
+  const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {
+    console.log('View structure:', tableName, connectionId, databaseName);
+  };
+
+  const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
+    console.log('Backup table:', tableName, connectionId, databaseName);
+  };
+
   return (
     <div>
       <Collapsible open={isExpanded} onOpenChange={() => onTableClick(tableName, connectionId)}>
         <CollapsibleTrigger asChild>
-          <div 
-            className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              onTableDoubleClick(tableName, connectionId);
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              console.log('Right click on table:', tableName);
-            }}
+          <TableContextMenu
+            tableName={tableName}
+            connectionId={connectionId}
+            databaseName={getCurrentDatabase()}
+            onQueryTable={handleTableQuery}
+            onViewStructure={handleTableStructure}
+            onBackupTable={handleTableBackup}
           >
-            <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
-              isExpanded ? 'rotate-90' : ''
-            }`} />
-            <Table className="w-3 h-3 mr-2" />
-            <span>{tableName}</span>
-          </div>
+            <div 
+              className="flex items-center p-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded cursor-pointer"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                onTableDoubleClick(tableName, connectionId);
+              }}
+            >
+              <ChevronRight className={`w-3 h-3 mr-1 transition-transform ${
+                isExpanded ? 'rotate-90' : ''
+              }`} />
+              <Table className="w-3 h-3 mr-2" />
+              <span>{tableName}</span>
+            </div>
+          </TableContextMenu>
         </CollapsibleTrigger>
         
         <CollapsibleContent className="ml-6 space-y-0.5">
