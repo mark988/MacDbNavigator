@@ -16,9 +16,13 @@ interface TableStructureViewProps {
   databaseName: string;
 }
 
+interface EditingValues extends Partial<TableColumn> {
+  baseType?: string;
+}
+
 export function TableStructureView({ tableName, connectionId, databaseName }: TableStructureViewProps) {
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
-  const [editingValues, setEditingValues] = useState<Partial<TableColumn>>({});
+  const [editingValues, setEditingValues] = useState<EditingValues>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -95,12 +99,28 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
 
   const handleEditColumn = (column: TableColumn) => {
     setEditingColumn(column.name);
+    
+    // Extract base type from full type definition
+    let baseType = '';
+    const typeStr = column.type.toLowerCase();
+    if (typeStr.includes('character varying') || typeStr.startsWith('varchar')) {
+      baseType = 'varchar';
+    } else if (typeStr.includes('character') || typeStr.startsWith('char(')) {
+      baseType = 'char';
+    } else if (typeStr.startsWith('numeric') || typeStr.startsWith('decimal')) {
+      baseType = typeStr.startsWith('numeric') ? 'numeric' : 'decimal';
+    } else {
+      // For simple types without parentheses, extract the base type
+      baseType = typeStr.split('(')[0];
+    }
+    
     setEditingValues({
       name: column.name,
       type: column.type,
+      baseType: baseType,
       nullable: column.nullable,
       default: column.default,
-    });
+    } as EditingValues);
   };
 
   const handleSaveColumn = () => {
@@ -180,18 +200,44 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
                   </TableCell>
                   <TableCell>
                     {editingColumn === column.name ? (
-                      <select
-                        value={editingValues.type || ''}
-                        onChange={(e) => setEditingValues({ ...editingValues, type: e.target.value })}
-                        className="px-2 py-1 border rounded w-40 text-sm bg-white dark:bg-gray-800 text-black dark:text-white border-gray-300 dark:border-gray-600"
-                      >
-                        <option value="">选择数据类型</option>
-                        {postgresqlDataTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex flex-col space-y-1">
+                        <select
+                          value={editingValues.baseType || ''}
+                          onChange={(e) => {
+                            const baseType = e.target.value;
+                            let fullType = baseType;
+                            
+                            // Add default length for types that commonly need it
+                            if (baseType === 'varchar' || baseType === 'character varying') {
+                              fullType = `${baseType}(255)`;
+                            } else if (baseType === 'char' || baseType === 'character') {
+                              fullType = `${baseType}(1)`;
+                            } else if (baseType === 'numeric' || baseType === 'decimal') {
+                              fullType = `${baseType}(10,2)`;
+                            }
+                            
+                            setEditingValues({ 
+                              ...editingValues, 
+                              baseType: baseType,
+                              type: fullType 
+                            } as EditingValues);
+                          }}
+                          className="px-2 py-1 border rounded w-40 text-sm bg-white dark:bg-gray-800 text-black dark:text-white border-gray-300 dark:border-gray-600"
+                        >
+                          <option value="">选择基础类型</option>
+                          {postgresqlDataTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                        <Input
+                          value={editingValues.type || ''}
+                          onChange={(e) => setEditingValues({ ...editingValues, type: e.target.value })}
+                          className="w-40 text-sm"
+                          placeholder="如: varchar(255), numeric(10,2)"
+                        />
+                      </div>
                     ) : (
                       <Badge variant="outline">{column.type}</Badge>
                     )}

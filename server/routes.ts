@@ -676,6 +676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const alterStatements = [];
         const qualifiedTableName = tableSchema === 'public' ? `"${tableName}"` : `"${tableSchema}"."${tableName}"`;
         
+        // Only execute changes that are actually different
         if (changes.name && changes.name !== columnName) {
           alterStatements.push(`ALTER TABLE ${qualifiedTableName} RENAME COLUMN "${columnName}" TO "${changes.name}"`);
         }
@@ -685,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" TYPE ${changes.type}`);
         }
         
-        if (changes.nullable !== undefined) {
+        if (changes.hasOwnProperty('nullable')) {
           const currentColumnName = changes.name || columnName;
           if (changes.nullable) {
             alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" DROP NOT NULL`);
@@ -694,7 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        if (changes.default !== undefined) {
+        if (changes.hasOwnProperty('default')) {
           const currentColumnName = changes.name || columnName;
           if (changes.default === '' || changes.default === null) {
             alterStatements.push(`ALTER TABLE ${qualifiedTableName} ALTER COLUMN "${currentColumnName}" DROP DEFAULT`);
