@@ -231,7 +231,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           </div>
           
           {/* Scrollable Body */}
-          <div className="flex-1 overflow-auto">
+          <div className="overflow-auto" style={{height: '300px'}}>
             <div>
               {currentRows.map((row: any, index: number) => (
                 <div
