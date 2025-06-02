@@ -300,10 +300,7 @@ function ConnectionItem({
           <div 
             className="flex items-center space-x-2 flex-1 min-w-0 cursor-pointer"
             onClick={() => {
-              // Set as active connection but don't toggle expansion
-              if (!isActive) {
-                // This will be handled by the parent component
-              }
+              onToggle();
             }}
           >
             {getConnectionStatus(connection)}
