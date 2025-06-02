@@ -659,6 +659,7 @@ function ConnectionItem({
                   onDatabaseRightClick={onDatabaseRightClick}
                   onTableClick={onTableClick}
                   onTableDoubleClick={onTableDoubleClick}
+                  onTableBackup={handleTableBackup}
                   isCurrent={true}
                 />
               )}
@@ -933,25 +934,7 @@ function TableItem({
             </div>
           </div>
           
-          {/* 表列信息 */}
-          {isLoading ? (
-            <div className="flex items-center p-1 text-xs text-gray-500">
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-              Loading columns...
-            </div>
-          ) : (
-            tableStructure?.columns.map((column) => (
-              <div
-                key={column.name}
-                className="flex items-center p-1 text-xs text-gray-500 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded"
-                title={`${column.type}${column.nullable ? ' (nullable)' : ' (not null)'}`}
-              >
-                <Columns className="w-3 h-3 mr-2" />
-                <span className="font-mono">{column.name}</span>
-                <span className="ml-2 text-gray-400">({column.type})</span>
-              </div>
-            ))
-          )}
+
         </CollapsibleContent>
       </Collapsible>
     </div>
