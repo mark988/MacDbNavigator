@@ -170,8 +170,8 @@ export function DatabaseSidebar() {
 
   const handleEditConnection = (connectionId: number, currentName: string) => {
     console.log('编辑连接:', connectionId, '当前名称:', currentName);
-    setEditingConnectionId(connectionId);
     setEditingName(currentName);
+    setEditingConnectionId(connectionId);
   };
 
   const handleSaveEdit = async (connectionId: number) => {
@@ -430,10 +430,14 @@ function ConnectionItem({
             {editingConnectionId === connection.id ? (
               <input
                 type="text"
-                value={editingName || connection.name}
+                value={editingName}
                 onChange={(e) => setEditingName(e.target.value)}
                 className="text-sm font-medium bg-white dark:bg-gray-800 border border-gray-400 dark:border-gray-500 rounded px-2 py-1 flex-1 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                 autoFocus
+                onFocus={(e) => {
+                  console.log('输入框获得焦点，当前值:', e.target.value);
+                  e.target.select(); // 选中所有文本
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     handleSaveEdit(connection.id);
