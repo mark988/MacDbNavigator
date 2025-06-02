@@ -785,23 +785,58 @@ function TableItem({
     return activeTab?.databaseName || '';
   };
 
-  // 表格右键菜单处理函数
+  // 表格查询处理函数
   const handleTableQuery = async (tableName: string, connectionId: number, databaseName: string) => {
     const queryContent = `SELECT * FROM ${tableName} LIMIT 100;`;
     
     // 创建新的查询标签
-    addTab({
+    const newTab = {
       title: `查询 - ${tableName}`,
-      type: 'query',
+      type: 'query' as const,
       connectionId,
       databaseName
-    });
+    };
     
-    toast({
-      title: "查询标签已创建",
-      description: `已为表 "${tableName}" 创建查询标签`,
-      duration: 3000,
-    });
+    addTab(newTab);
+    
+    // 自动执行查询
+    try {
+      const { setIsExecuting, setQueryResults } = useDatabaseStore.getState();
+      setIsExecuting(true);
+      
+      const response = await fetch(`/api/connections/${connectionId}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          query: queryContent, 
+          database: databaseName 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('查询执行失败');
+      }
+      
+      const result = await response.json();
+      setQueryResults(result);
+      
+      toast({
+        title: "查询执行成功",
+        description: `表 "${tableName}" 的数据已加载，共 ${result.rowCount} 条记录`,
+        duration: 3000,
+      });
+      
+    } catch (error) {
+      toast({
+        title: "查询失败",
+        description: "执行查询时发生错误",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      const { setIsExecuting } = useDatabaseStore.getState();
+      setIsExecuting(false);
+    }
   };
 
   const handleTableStructure = (tableName: string, connectionId: number, databaseName: string) => {
@@ -821,10 +856,11 @@ function TableItem({
   };
 
   const handleTableBackup = (tableName: string, connectionId: number, databaseName: string) => {
-    toast({
-      title: "备份功能",
-      description: `表 "${tableName}" 的备份功能正在开发中`,
-      duration: 3000,
+    setBackupDialog({
+      open: true,
+      tableName,
+      connectionId,
+      databaseName
     });
   };
 
