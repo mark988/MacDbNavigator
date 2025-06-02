@@ -66,7 +66,17 @@ export function BackupDialog({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${tableName}_backup_${new Date().toISOString().split('T')[0]}.sql`;
+      
+      // 生成文件名：表名_年-月-日-时分秒.sql
+      const now = new Date();
+      const timestamp = now.getFullYear() + '-' + 
+                       String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(now.getDate()).padStart(2, '0') + '-' + 
+                       String(now.getHours()).padStart(2, '0') + 
+                       String(now.getMinutes()).padStart(2, '0') + 
+                       String(now.getSeconds()).padStart(2, '0');
+      
+      a.download = `${tableName}_${timestamp}.sql`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

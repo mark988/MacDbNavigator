@@ -816,6 +816,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 备份表数据为SQL文件
+  app.post('/api/connections/:id/backup', async (req: Request, res: Response) => {
+    const connectionId = parseInt(req.params.id);
+    const { tableName, database, format } = req.body;
+
+    try {
+      const connection = await storage.getConnection(connectionId);
+      
+      if (!connection) {
+        return res.status(404).json({ error: '连接未找到' });
+      }
+
+      let client;
+      let sqlContent = '';
+      
+      if (connection.type === 'postgresql') {
+        client = createPostgreSQLClient({
+          ...connection,
+          database: database || connection.database
+        });
+        
+        await client.connect();
+
+        // 1. 获取表结构
+        const structureQuery = `
+          SELECT 
+            column_name,
+            data_type,
+            is_nullable,
+            column_default,
+            character_maximum_length,
+            numeric_precision,
+            numeric_scale
+          FROM information_schema.columns 
+          WHERE table_name = $1 AND table_schema = 'public'
+          ORDER BY ordinal_position
+        `;
+        
+        const structureResult = await client.query(structureQuery, [tableName]);
+        
+        // 生成CREATE TABLE语句
+        sqlContent += `-- 备份文件: ${tableName}\n`;
+        sqlContent += `-- 生成时间: ${new Date().toISOString()}\n`;
+        sqlContent += `-- 数据库: ${database}\n\n`;
+        
+        sqlContent += `DROP TABLE IF EXISTS ${tableName};\n\n`;
+        sqlContent += `CREATE TABLE ${tableName} (\n`;
+        
+        const columnDefinitions = structureResult.rows.map((col: any) => {
+          let definition = `    ${col.column_name} ${col.data_type}`;
+          
+          if (col.character_maximum_length) {
+            definition += `(${col.character_maximum_length})`;
+          } else if (col.numeric_precision && col.numeric_scale !== null) {
+            definition += `(${col.numeric_precision},${col.numeric_scale})`;
+          } else if (col.numeric_precision) {
+            definition += `(${col.numeric_precision})`;
+          }
+          
+          if (col.is_nullable === 'NO') {
+            definition += ' NOT NULL';
+          }
+          
+          if (col.column_default) {
+            definition += ` DEFAULT ${col.column_default}`;
+          }
+          
+          return definition;
+        });
+        
+        sqlContent += columnDefinitions.join(',\n');
+        sqlContent += '\n);\n\n';
+
+        // 2. 获取表数据
+        const dataQuery = `SELECT * FROM ${tableName}`;
+        const dataResult = await client.query(dataQuery);
+        
+        if (dataResult.rows.length > 0) {
+          sqlContent += `-- 插入数据\n`;
+          
+          for (const row of dataResult.rows) {
+            const columns = Object.keys(row);
+            const values = columns.map(col => {
+              const value = row[col];
+              if (value === null) return 'NULL';
+              if (typeof value === 'string') {
+                return `'${value.replace(/'/g, "''")}'`;
+              }
+              if (value instanceof Date) {
+                return `'${value.toISOString()}'`;
+              }
+              return value;
+            });
+            
+            sqlContent += `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values.join(', ')});\n`;
+          }
+        } else {
+          sqlContent += `-- 表中无数据\n`;
+        }
+
+        await client.end();
+        
+      } else {
+        return res.status(400).json({ error: '暂不支持此数据库类型的备份' });
+      }
+
+      // 生成文件名：表名_年-月-日-时分秒.sql
+      const now = new Date();
+      const timestamp = now.getFullYear() + '-' + 
+                       String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(now.getDate()).padStart(2, '0') + '-' + 
+                       String(now.getHours()).padStart(2, '0') + 
+                       String(now.getMinutes()).padStart(2, '0') + 
+                       String(now.getSeconds()).padStart(2, '0');
+      
+      const filename = `${tableName}_${timestamp}.sql`;
+
+      // 设置响应头
+      res.setHeader('Content-Type', 'application/sql');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(sqlContent);
+      
+    } catch (error: any) {
+      console.error('备份表数据错误:', error);
+      res.status(500).json({ 
+        error: error.message || '备份表数据失败',
+        details: error.toString()
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
