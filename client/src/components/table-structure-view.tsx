@@ -183,7 +183,7 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
                       <select
                         value={editingValues.type || ''}
                         onChange={(e) => setEditingValues({ ...editingValues, type: e.target.value })}
-                        className="px-2 py-1 border rounded w-40 text-sm"
+                        className="px-2 py-1 border rounded w-40 text-sm bg-white dark:bg-gray-800 text-black dark:text-white border-gray-300 dark:border-gray-600"
                       >
                         <option value="">选择数据类型</option>
                         {postgresqlDataTypes.map((type) => (
@@ -201,7 +201,7 @@ export function TableStructureView({ tableName, connectionId, databaseName }: Ta
                       <select
                         value={editingValues.nullable ? 'true' : 'false'}
                         onChange={(e) => setEditingValues({ ...editingValues, nullable: e.target.value === 'true' })}
-                        className="px-2 py-1 border rounded"
+                        className="px-2 py-1 border rounded bg-white dark:bg-gray-800 text-black dark:text-white border-gray-300 dark:border-gray-600"
                       >
                         <option value="true">是</option>
                         <option value="false">否</option>
