@@ -787,8 +787,8 @@ function TableItem({
 
   // 表格查询处理函数
   const handleTableQuery = async (tableName: string, connectionId: number, databaseName: string) => {
-    // 在PostgreSQL中，使用schema.table格式，不用引号
-    const queryContent = `SELECT * FROM ${databaseName}.${tableName} LIMIT 100;`;
+    // 先尝试不带schema的简单查询
+    const queryContent = `SELECT * FROM ${tableName} LIMIT 100;`;
     
     // 创建新的查询标签
     const newTab = {

@@ -1822,8 +1822,16 @@
       "executionTime": 869,
       "rowCount": null,
       "createdAt": "2025-06-02T11:48:03.912Z"
+    },
+    {
+      "id": 227,
+      "connectionId": 4,
+      "query": "SELECT * FROM .t_order LIMIT 100;",
+      "executionTime": 894,
+      "rowCount": null,
+      "createdAt": "2025-06-02T11:49:15.065Z"
     }
   ],
   "nextConnectionId": 5,
-  "nextHistoryId": 227
+  "nextHistoryId": 228
 }
