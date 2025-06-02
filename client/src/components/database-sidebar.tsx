@@ -452,7 +452,7 @@ function ConnectionItem({
             )}
             
             {/* Other Databases */}
-            {databaseInfo?.databases.filter(db => db !== connection.database).map((dbName) => (
+            {databaseInfo?.databases?.filter(db => db !== connection.database).map((dbName) => (
               <OtherDatabaseItem
                 key={dbName}
                 dbName={dbName}
