@@ -14,7 +14,10 @@ import {
   Circle,
   Loader2,
   Columns,
-  Trash2
+  Trash2,
+  Edit2,
+  Check,
+  X
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
 import { DatabaseContextMenu } from './context-menu';
@@ -41,6 +44,8 @@ export function DatabaseSidebar() {
   const [expandedConnections, setExpandedConnections] = useState<Set<number>>(new Set());
   const [expandedDatabases, setExpandedDatabases] = useState<Set<string>>(new Set());
   const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set());
+  const [editingConnectionId, setEditingConnectionId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState<string>('');
 
   const { data: connectionsData, refetch: refetchConnections } = useQuery({
     queryKey: ['/api/connections'],
@@ -163,6 +168,57 @@ export function DatabaseSidebar() {
     }
   };
 
+  const handleEditConnection = (connectionId: number, currentName: string) => {
+    setEditingConnectionId(connectionId);
+    setEditingName(currentName);
+  };
+
+  const handleSaveEdit = async (connectionId: number) => {
+    if (!editingName.trim()) {
+      toast({
+        title: "保存失败",
+        description: "连接名称不能为空",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/connections/${connectionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editingName.trim() }),
+      });
+
+      if (!response.ok) {
+        throw new Error('更新连接失败');
+      }
+
+      setEditingConnectionId(null);
+      setEditingName('');
+      refetchConnections();
+      
+      toast({
+        title: "连接已更新",
+        description: `连接名称已更新为 "${editingName.trim()}"`,
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "保存失败",
+        description: "更新连接名称时发生错误",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingConnectionId(null);
+    setEditingName('');
+  };
+
   const handleDatabaseRightClick = (dbName: string, connectionId: number) => {
     handleNewQuery(dbName, connectionId);
   };
@@ -266,6 +322,12 @@ export function DatabaseSidebar() {
                 onTableDoubleClick={handleTableDoubleClick}
                 onDeleteConnection={handleDeleteConnection}
                 getConnectionStatus={getConnectionStatus}
+                editingConnectionId={editingConnectionId}
+                editingName={editingName}
+                handleEditConnection={handleEditConnection}
+                handleSaveEdit={handleSaveEdit}
+                handleCancelEdit={handleCancelEdit}
+                setEditingName={setEditingName}
               />
             ))}
           </div>
@@ -311,6 +373,12 @@ interface ConnectionItemProps {
   onTableDoubleClick: (tableName: string, connectionId: number) => void;
   onDeleteConnection: (connectionId: number) => void;
   getConnectionStatus: (connection: Connection) => React.ReactNode;
+  editingConnectionId: number | null;
+  editingName: string;
+  handleEditConnection: (connectionId: number, currentName: string) => void;
+  handleSaveEdit: (connectionId: number) => void;
+  handleCancelEdit: () => void;
+  setEditingName: (name: string) => void;
 }
 
 function ConnectionItem({ 
@@ -325,7 +393,13 @@ function ConnectionItem({
   onTableClick, 
   onTableDoubleClick,
   onDeleteConnection,
-  getConnectionStatus 
+  getConnectionStatus,
+  editingConnectionId,
+  editingName,
+  handleEditConnection,
+  handleSaveEdit,
+  handleCancelEdit,
+  setEditingName
 }: ConnectionItemProps) {
   const { data: databaseInfo, isLoading } = useQuery({
     queryKey: ['/api/connections', connection.id, 'databases'],
@@ -352,42 +426,97 @@ function ConnectionItem({
             }}
           >
             {getConnectionStatus(connection)}
-            <span className="text-sm font-medium truncate">
-              {connection.name}
-            </span>
+            {editingConnectionId === connection.id ? (
+              <input
+                type="text"
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                className="text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 flex-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveEdit(connection.id);
+                  } else if (e.key === 'Escape') {
+                    handleCancelEdit();
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span className="text-sm font-medium truncate">
+                {connection.name}
+              </span>
+            )}
           </div>
           
           <div className="flex items-center space-x-1">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            {editingConnectionId === connection.id ? (
+              <>
                 <button 
-                  className="p-1 hover:bg-red-500 hover:text-white rounded opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1 hover:bg-green-500 hover:text-white rounded transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
+                    handleSaveEdit(connection.id);
                   }}
-                  title="删除连接"
+                  title="保存"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Check className="w-3 h-3" />
                 </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>删除连接</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    确定要删除连接 "{connection.name}" 吗？此操作无法撤销。
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>取消</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-red-600 hover:bg-red-700"
-                    onClick={() => onDeleteConnection(connection.id)}
-                  >
-                    删除
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                <button 
+                  className="p-1 hover:bg-gray-500 hover:text-white rounded transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCancelEdit();
+                  }}
+                  title="取消"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  className="p-1 hover:bg-blue-500 hover:text-white rounded opacity-0 group-hover:opacity-100 transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditConnection(connection.id, connection.name);
+                  }}
+                  title="编辑连接名称"
+                >
+                  <Edit2 className="w-3 h-3" />
+                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button 
+                      className="p-1 hover:bg-red-500 hover:text-white rounded opacity-0 group-hover:opacity-100 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      title="删除连接"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>删除连接</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        确定要删除连接 "{connection.name}" 吗？此操作无法撤销。
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>取消</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={() => onDeleteConnection(connection.id)}
+                      >
+                        删除
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            )}
             
             <CollapsibleTrigger asChild>
               <button 
