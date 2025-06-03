@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import { DatabaseSidebar } from "@/components/database-sidebar";
 import { SQLEditor } from "@/components/sql-editor";
-import { QueryResults } from "@/components/query-results";
+import { QueryResults } from "@/components/query-results-new";
 import { ConnectionModal } from "@/components/connection-modal";
 import { TableStructureView } from "@/components/table-structure-view";
 import { useDatabaseStore } from "@/lib/database-store";

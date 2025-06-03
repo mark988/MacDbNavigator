@@ -2014,8 +2014,16 @@
       "executionTime": 1127,
       "rowCount": 51,
       "createdAt": "2025-06-03T01:45:19.789Z"
+    },
+    {
+      "id": 251,
+      "connectionId": 6,
+      "query": "select * from t_order",
+      "executionTime": 1124,
+      "rowCount": 51,
+      "createdAt": "2025-06-03T01:51:37.553Z"
     }
   ],
   "nextConnectionId": 7,
-  "nextHistoryId": 251
+  "nextHistoryId": 252
 }
