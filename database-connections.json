@@ -2038,8 +2038,16 @@
       "executionTime": 1121,
       "rowCount": 51,
       "createdAt": "2025-06-03T01:56:11.694Z"
+    },
+    {
+      "id": 254,
+      "connectionId": 6,
+      "query": "SELECT * FROM t_order LIMIT 100;",
+      "executionTime": 131339,
+      "rowCount": null,
+      "createdAt": "2025-06-03T01:58:25.469Z"
     }
   ],
   "nextConnectionId": 7,
-  "nextHistoryId": 254
+  "nextHistoryId": 255
 }

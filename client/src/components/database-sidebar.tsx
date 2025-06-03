@@ -22,8 +22,8 @@ import {
   Download
 } from 'lucide-react';
 import { useDatabaseStore } from '@/lib/database-store';
-import { DatabaseContextMenu } from './context-menu';
-import { TableContextMenu } from './table-context-menu';
+import { DatabaseContextMenu } from './database-context-menu-improved';
+import { TableContextMenu } from './table-context-menu-improved';
 import { BackupDialog } from './backup-dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { Connection, DatabaseInfo, QueryHistory, TableStructure } from '@shared/schema';
