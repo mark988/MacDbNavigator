@@ -1,0 +1,3 @@
+npm run build     # 构建前端到 dist/public
+npm start         # 确保后端 Express 可运行
+npm run electron  # Electron 启动
