@@ -236,9 +236,9 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
           No data found
         </div>
       ) : (
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Table Container */}
-          <div className="flex-1 border-x border-gray-200 dark:border-gray-700 flex flex-col min-h-0">
+          <div className="flex-1 border-x border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
             {/* Fixed Header */}
             <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-500 flex-shrink-0">
               <div className="flex">
@@ -254,7 +254,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
             </div>
             
             {/* Scrollable Body */}
-            <div className="flex-1 overflow-auto min-h-0">
+            <div className="flex-1 overflow-auto">
               <div>
                 {currentRows.map((row: any, index: number) => (
                   <div
@@ -411,8 +411,8 @@ export function QueryResults() {
     };
 
     return (
-      <div className="flex flex-col border-t border-gray-200 dark:border-gray-700" style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}>
-        <Tabs defaultValue="statement-0" className="flex-1 flex flex-col h-full">
+      <div className="flex flex-col flex-1 border-t border-gray-200 dark:border-gray-700 overflow-hidden">
+        <Tabs defaultValue="statement-0" className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="w-full justify-start border-b border-gray-200 dark:border-gray-700 bg-transparent h-auto p-0 flex-shrink-0">
             {queryResults.multiStatementResults.map((result, index) => (
               <TabsTrigger
@@ -425,7 +425,7 @@ export function QueryResults() {
             ))}
           </TabsList>
           {queryResults.multiStatementResults.map((result, index) => (
-            <TabsContent key={index} value={`statement-${index}`} className="flex-1 m-0 p-0 h-full overflow-hidden">
+            <TabsContent key={index} value={`statement-${index}`} className="flex-1 m-0 p-0 overflow-hidden">
               <SingleQueryResult queryResult={result.result} statement={result.statement} />
             </TabsContent>
           ))}
