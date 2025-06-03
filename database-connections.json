@@ -1,8 +1,8 @@
 {
   "connections": [
     {
-      "id": 4,
-      "name": "测试PG数据库",
+      "id": 6,
+      "name": "postgresql",
       "type": "postgresql",
       "host": "47.113.222.217",
       "port": 5432,
@@ -11,7 +11,7 @@
       "password": "mark8355141",
       "useSSL": false,
       "isConnected": false,
-      "createdAt": "2025-06-02T08:33:44.866Z"
+      "createdAt": "2025-06-03T01:33:18.846Z"
     }
   ],
   "queryHistories": [
@@ -1998,8 +1998,16 @@
       "executionTime": 1151,
       "rowCount": 51,
       "createdAt": "2025-06-02T14:14:47.532Z"
+    },
+    {
+      "id": 249,
+      "connectionId": 6,
+      "query": "select * from t_order",
+      "executionTime": 1130,
+      "rowCount": 51,
+      "createdAt": "2025-06-03T01:35:24.144Z"
     }
   ],
-  "nextConnectionId": 5,
-  "nextHistoryId": 249
+  "nextConnectionId": 7,
+  "nextHistoryId": 250
 }

@@ -178,7 +178,7 @@ function SingleQueryResult({ queryResult, statement }: SingleQueryResultProps) {
   };
 
   return (
-    <div className="flex flex-col border-t border-gray-200 dark:border-gray-700" style={{ marginTop: '-0.75rem', height: 'calc(100vh - 400px)', minHeight: '400px' }}>
+    <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 flex-1 min-h-0" style={{ marginTop: '-0.75rem' }}>
       {/* Results Header */}
       <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
